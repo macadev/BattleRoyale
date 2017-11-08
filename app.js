@@ -9,14 +9,27 @@ process.env.NODE_ENV = 'development'
 
 var rooms = []
 
-io.on('connection', function (socket) {
+var gameState = {}
+
+io.on('connection', (socket) => {
     var roomName = 'game-1'
     socket.join(roomName)
-    socket.emit('join-info', { room: roomName  });
-    socket.on('my other event', function (data) {
-        console.log(data);
-    });
+    
+    socket.emit('join-info', { room: roomName  })
+    
+    socket.on('client-update', (data) => {
+        gameState[socket.id] = data;
+    })
+
+    socket.on('disconnect', () => {
+        console.log("disconnect taking place", socket.id)
+        delete gameState[socket.id]
+    })
 });
+
+setInterval(() => {
+    io.emit('server-update', gameState);
+}, 30)
 
 app.use(express.static('public', {}))
 
