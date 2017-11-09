@@ -23,7 +23,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         playerColor = randomColor(120),
         keys = [];
 
-    var gameState = {}
+    var gameState = {};
+    var clientInputs = [];
+    var inputCount = 0;
 
     var socket = io.connect('http://localhost:4000');
     socket.on('join-info', function (data) {
@@ -33,8 +35,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // socket.emit('my other event', { my: 'data' });
     });
     socket.on('server-update', function(data) {
+        console.log("received sever update");
         gameState = data;
-    })
+    });
 
     function drawPlayer() {
         if (keys[38]) {
@@ -83,15 +86,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     function drawMyServerPosition() {
-        if (!gameState[socket.id]) {
-            console.log("Server doesn't have my ID");
-            return;
-        }
-
         let myServerPosition = gameState[socket.id];
         
         ctx.beginPath();
-        ctx.arc(myServerPosition.posX, myServerPosition.posY, 5, 0, Math.PI * 2);
+        ctx.arc(myServerPosition.x, myServerPosition.y, 5, 0, Math.PI * 2);
         ctx.fillStyle = "red";
         ctx.fill();
     }
@@ -102,23 +100,35 @@ document.addEventListener("DOMContentLoaded", function(event) {
             if ([playerId] == socket.id) continue;
             let playerData = gameState[playerId];
             ctx.beginPath();
-            ctx.arc(playerData.posX, playerData.posY, 5, 0, Math.PI * 2);
+            ctx.arc(playerData.x, playerData.y, 5, 0, Math.PI * 2);
             ctx.fillStyle = playerData.color;
             ctx.fill();
         }
     }
-
+    
     function gameLoop() {
         requestAnimationFrame(gameLoop);
+        // if (!gameState.playerStates[socket.id]) {
+        //     console.log("Server hasn't acknowledged me yet.");
+        //     return;
+        // }
         ctx.clearRect(0, 0, 300, 300);
         drawPlayer();
-        drawMyServerPosition();
+        // drawMyServerPosition();
         drawGameState();
-        socket.emit('client-update', { 
-            posX: x, 
-            posY: y,
-            color: playerColor 
-        });
+
+        let loopInputs = {
+            up: keys[38],
+            down: keys[40],
+            right: keys[39],
+            left: keys[37],
+            color: playerColor,
+            id: inputCount
+        }
+
+        clientInputs.push(loopInputs);
+
+        socket.emit('client-update', loopInputs);
     }
 
     document.body.addEventListener("keydown", function (e) {

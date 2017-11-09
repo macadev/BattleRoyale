@@ -1,5 +1,6 @@
 const express = require('express')
 const errorhandler = require('errorhandler')
+const gameStateManager = require('./game')
 
 var app = express()
 var server = require('http').Server(app)
@@ -9,11 +10,20 @@ process.env.NODE_ENV = 'development'
 
 var rooms = []
 
-var gameState = {}
+var gameState = {
+    playerStates: {}
+}
 
 io.on('connection', (socket) => {
     var roomName = 'game-1'
     socket.join(roomName)
+
+    gameState.playerStates[socket.id] = {
+        x: 150,
+        y: 150,
+        velX: 0,
+        velY: 0
+    }
     
     socket.emit('join-info', { room: roomName  })
     
@@ -28,8 +38,9 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
+    console.log("sending server update");
     io.emit('server-update', gameState);
-}, 30)
+}, 150)
 
 app.use(express.static('public', {}))
 
