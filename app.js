@@ -14,6 +14,8 @@ var gameState = {
     playerStates: {}
 }
 
+var frameInputs = []
+
 io.on('connection', (socket) => {
     var roomName = 'game-1'
     socket.join(roomName)
@@ -27,8 +29,14 @@ io.on('connection', (socket) => {
     
     socket.emit('join-info', { room: roomName  })
     
-    socket.on('client-update', (data) => {
-        gameState[socket.id] = data;
+    socket.on('client-update', (clientInputs) => {
+        console.log("Received client inputs")
+        frameInputs.push({
+            socketId: socket.id,
+            inputs: clientInputs
+        })
+        // gameStateManager.updatePlayerState(clientInputs, gameState.playerStates[socket.id]);
+        // gameState[socket.id] = data;
     })
 
     socket.on('disconnect', () => {
@@ -39,8 +47,12 @@ io.on('connection', (socket) => {
 
 setInterval(() => {
     console.log("sending server update");
+    frameInputs.forEach((frameInput) => {
+        gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId]);
+    })
+    frameInputs = []
     io.emit('server-update', gameState);
-}, 150)
+}, 17)
 
 app.use(express.static('public', {}))
 
@@ -58,4 +70,4 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler())
 }
 
-server.listen(4000)
+server.listen(4000, '0.0.0.0')

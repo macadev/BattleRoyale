@@ -29,13 +29,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     var socket = io.connect('http://localhost:4000');
     socket.on('join-info', function (data) {
-        console.log(data);
         // Server connected. Begin rendering game.
         gameLoop();
-        // socket.emit('my other event', { my: 'data' });
     });
     socket.on('server-update', function(data) {
-        console.log("received sever update");
         gameState = data;
     });
 
@@ -86,7 +83,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     function drawMyServerPosition() {
-        let myServerPosition = gameState[socket.id];
+        if (!gameState || !gameState.playerStates) return
+        let myServerPosition = gameState.playerStates[socket.id];
         
         ctx.beginPath();
         ctx.arc(myServerPosition.x, myServerPosition.y, 5, 0, Math.PI * 2);
@@ -95,10 +93,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     function drawGameState() {
-        console.log(gameState);
-        for (let playerId in gameState) {
-            if ([playerId] == socket.id) continue;
-            let playerData = gameState[playerId];
+        for (let playerSocketId in gameState.playerStates) {
+            if ([playerSocketId] == socket.id) continue;
+            let playerData = gameState.playerStates[playerSocketId];
             ctx.beginPath();
             ctx.arc(playerData.x, playerData.y, 5, 0, Math.PI * 2);
             ctx.fillStyle = playerData.color;
@@ -108,13 +105,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     
     function gameLoop() {
         requestAnimationFrame(gameLoop);
-        // if (!gameState.playerStates[socket.id]) {
-        //     console.log("Server hasn't acknowledged me yet.");
-        //     return;
-        // }
         ctx.clearRect(0, 0, 300, 300);
         drawPlayer();
-        // drawMyServerPosition();
+        drawMyServerPosition();
         drawGameState();
 
         let loopInputs = {
@@ -126,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             id: inputCount
         }
 
-        clientInputs.push(loopInputs);
+        // clientInputs.push(loopInputs);
 
         socket.emit('client-update', loopInputs);
     }
