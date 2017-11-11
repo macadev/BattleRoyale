@@ -41,13 +41,14 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log("disconnect taking place", socket.id)
-        delete gameState[socket.id]
+        delete gameState.playerStates[socket.id]
     })
 });
 
 setInterval(() => {
-    console.log("sending server update");
     frameInputs.forEach((frameInput) => {
+        // Inputs were queued and player disconnected. Can't process them.
+        if (!gameState.playerStates[frameInput.socketId]) return;
         gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId]);
     })
     frameInputs = []
