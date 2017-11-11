@@ -23,11 +23,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
         playerColor = randomColor(120),
         keys = [];
 
+    var fps = 60;
+    var now;
+    var then = Date.now();
+    var interval = 1000 / fps;
+    var delta;
+
     var gameState = {};
     var clientInputs = [];
     var inputCount = 0;
 
-    var socket = io.connect('http://localhost:4000');
+    var socket = io.connect();
     socket.on('join-info', function (data) {
         // Server connected. Begin rendering game.
         gameLoop();
@@ -105,6 +111,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
     
     function gameLoop() {
         requestAnimationFrame(gameLoop);
+
+        now = Date.now();
+        delta = now - then;
+
+        if (delta <= interval) return;
+
         ctx.clearRect(0, 0, 300, 300);
         drawPlayer();
         drawMyServerPosition();
@@ -118,10 +130,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
             color: playerColor,
             id: inputCount
         }
-
         // clientInputs.push(loopInputs);
 
         socket.emit('client-update', loopInputs);
+        then = now - (delta % interval);
     }
 
     document.body.addEventListener("keydown", function (e) {

@@ -30,7 +30,6 @@ io.on('connection', (socket) => {
     socket.emit('join-info', { room: roomName  })
     
     socket.on('client-update', (clientInputs) => {
-        console.log("Received client inputs")
         frameInputs.push({
             socketId: socket.id,
             inputs: clientInputs
@@ -46,14 +45,18 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
+    // console.log("Input queue length", frameInputs.length);
     frameInputs.forEach((frameInput) => {
         // Inputs were queued and player disconnected. Can't process them.
         if (!gameState.playerStates[frameInput.socketId]) return;
         gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId]);
     })
     frameInputs = []
-    io.emit('server-update', gameState);
 }, 17)
+
+setInterval(() => {
+    io.emit('server-update', gameState);
+}, 45)
 
 app.use(express.static('public', {}))
 
