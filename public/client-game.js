@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     var gameState = {};
     var clientInputs = [];
-    var inputCount = 0;
+    var inputSeqNumber = 0;
 
     var socket = io.connect();
     socket.on('join-info', function (data) {
@@ -108,6 +108,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
             ctx.fill();
         }
     }
+
+    function serverReconciliation() {
+        var inputToProcessIndex = 0;
+        for (let input of clientInputs) {
+            if (input.sequenceNumber <= gameState.playerStates[socket.id].lastSeqNumber) {
+                inputToProcessIndex++;
+                continue;
+            } else {
+                // Found new input that hasn't been acknowledged
+                break;
+            }
+        }
+    }
     
     function gameLoop() {
         requestAnimationFrame(gameLoop);
@@ -117,6 +130,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         if (delta <= interval) return;
 
+        serverReconciliation();
+        
         ctx.clearRect(0, 0, 300, 300);
         drawPlayer();
         drawMyServerPosition();
@@ -128,10 +143,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
             right: keys[39],
             left: keys[37],
             color: playerColor,
-            id: inputCount
+            sequenceNumber: inputSeqNumber
         }
-        // clientInputs.push(loopInputs);
+        
+        clientInputs.push(loopInputs);
+        inputSeqNumber++;
 
+        console.log(gameState)
         socket.emit('client-update', loopInputs);
         then = now - (delta % interval);
     }

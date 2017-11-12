@@ -24,7 +24,8 @@ io.on('connection', (socket) => {
         x: 150,
         y: 150,
         velX: 0,
-        velY: 0
+        velY: 0,
+        lastSeqNumber: -1
     }
     
     socket.emit('join-info', { room: roomName  })
@@ -45,13 +46,16 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
-    // console.log("Input queue length", frameInputs.length);
     frameInputs.forEach((frameInput) => {
         // Inputs were queued and player disconnected. Can't process them.
         if (!gameState.playerStates[frameInput.socketId]) return;
+        
+        // Update player position on server. Acknowledge last input.
         gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId]);
+        gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber;
     })
     frameInputs = []
+    console.log(gameState)
 }, 17)
 
 setInterval(() => {
