@@ -28,15 +28,13 @@ io.on('connection', (socket) => {
         lastSeqNumber: -1
     }
     
-    socket.emit('join-info', { room: roomName  })
+    socket.emit('ack-join', gameState)
     
     socket.on('client-update', (clientInputs) => {
         frameInputs.push({
             socketId: socket.id,
             inputs: clientInputs
         })
-        // gameStateManager.updatePlayerState(clientInputs, gameState.playerStates[socket.id]);
-        // gameState[socket.id] = data;
     })
 
     socket.on('disconnect', () => {
@@ -48,18 +46,17 @@ io.on('connection', (socket) => {
 setInterval(() => {
     frameInputs.forEach((frameInput) => {
         // Inputs were queued and player disconnected. Can't process them.
-        if (!gameState.playerStates[frameInput.socketId]) return;
+        if (!gameState.playerStates[frameInput.socketId]) return
         
         // Update player position on server. Acknowledge last input.
-        gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId]);
-        gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber;
+        gameStateManager.updatePlayerState(frameInput.inputs, gameState.playerStates[frameInput.socketId])
+        gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
     frameInputs = []
-    console.log(gameState)
 }, 17)
 
 setInterval(() => {
-    io.emit('server-update', gameState);
+    io.emit('server-update', gameState)
 }, 45)
 
 app.use(express.static('public', {}))
@@ -74,8 +71,8 @@ app.use((req, res) => {
 })
 
 if (process.env.NODE_ENV === 'development') {
-    console.log("In development");``
+    console.log("In development")
     app.use(errorhandler())
 }
 
-server.listen(4000, '0.0.0.0')
+server.listen(5000, '0.0.0.0')

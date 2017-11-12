@@ -14,14 +14,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     canvas.width = canvas.height = 300;
 
-    var x = 150,
-        y = 150,
-        velY = 0,
-        velX = 0,
-        speed = 2,
+    var speed = 2,
         friction = 0.98,
         playerColor = randomColor(120),
         keys = [];
+
+    var localPlayerState = {
+        x: 150,
+        y: 150,
+        velY: 0,
+        velX: 0
+    }
 
     var fps = 60;
     var now;
@@ -34,7 +37,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var inputSeqNumber = 0;
 
     var socket = io.connect();
-    socket.on('join-info', function (data) {
+    socket.on('ack-join', function (data) {
+        gameState = data
         // Server connected. Begin rendering game.
         gameLoop();
     });
@@ -42,48 +46,52 @@ document.addEventListener("DOMContentLoaded", function(event) {
         gameState = data;
     });
 
-    function drawPlayer() {
-        if (keys[38]) {
-            if (velY > -speed) {
-                velY--;
+    function calculateNewPosition(playerState, inputs) {
+        if (inputs.up) {
+            if (playerState.velY > -speed) {
+                playerState.velY--;
             }
         }
         
-        if (keys[40]) {
-            if (velY < speed) {
-                velY++;
+        if (inputs.down) {
+            if (playerState.velY < speed) {
+                playerState.velY++;
             }
         }
-        if (keys[39]) {
-            if (velX < speed) {
-                velX++;
+        if (inputs.right) {
+            if (playerState.velX < speed) {
+                playerState.velX++;
             }
         }
-        if (keys[37]) {
-            if (velX > -speed) {
-                velX--;
+        if (inputs.left) {
+            if (playerState.velX > -speed) {
+                playerState.velX--;
             }
         }
 
-        velY *= friction;
-        y += velY;
-        velX *= friction;
-        x += velX;
+        playerState.velY *= friction;
+        playerState.y += playerState.velY;
+        playerState.velX *= friction;
+        playerState.x += playerState.velX;
 
-        if (x >= 295) {
-            x = 295;
-        } else if (x <= 5) {
-            x = 5;
+        // TODO: Consider removing this. Server reconciliation 
+        // eliminates the need for boundary checking.
+        if (playerState.x >= 295) {
+            playerState.x = 295;
+        } else if (playerState.x <= 5) {
+            playerState.x = 5;
         }
 
-        if (y > 295) {
-            y = 295;
-        } else if (y <= 5) {
-            y = 5;
+        if (playerState.y > 295) {
+            playerState.y = 295;
+        } else if (playerState.y <= 5) {
+            playerState.y = 5;
         }
+    }
 
+    function drawPlayer(playerState) {
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.arc(playerState.x, playerState.y, 5, 0, Math.PI * 2);
         ctx.fillStyle = playerColor;
         ctx.fill();
     }
@@ -111,6 +119,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     function serverReconciliation() {
         var inputToProcessIndex = 0;
+        // Number of inputs in queue hovers around 4. This is not as expensive
+        // as it seems.
         for (let input of clientInputs) {
             if (input.sequenceNumber <= gameState.playerStates[socket.id].lastSeqNumber) {
                 inputToProcessIndex++;
@@ -119,6 +129,24 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 // Found new input that hasn't been acknowledged
                 break;
             }
+        }
+        // Remove inputs that have been acknowledged by the server
+        clientInputs.splice(0, inputToProcessIndex);
+
+        // Apply un-acked inputs on position indicated by server
+        var serverPlayerState = Object.assign({}, gameState.playerStates[socket.id])
+        for (let input of clientInputs) {
+            calculateNewPosition(serverPlayerState, input);
+        }
+
+        if (
+            serverPlayerState.x !== localPlayerState.x || 
+            serverPlayerState.y !== localPlayerState.y
+        ) {
+            // Client and server do not coincide on the client position.
+            // Enforce position dictated by the server.
+            localPlayerState.x = serverPlayerState.x;
+            localPlayerState.y = serverPlayerState.y;
         }
     }
     
@@ -130,13 +158,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         if (delta <= interval) return;
 
-        serverReconciliation();
-        
-        ctx.clearRect(0, 0, 300, 300);
-        drawPlayer();
-        drawMyServerPosition();
-        drawGameState();
-
         let loopInputs = {
             up: keys[38],
             down: keys[40],
@@ -145,11 +166,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
             color: playerColor,
             sequenceNumber: inputSeqNumber
         }
+
+        serverReconciliation();
+        
+        ctx.clearRect(0, 0, 300, 300);
+        calculateNewPosition(localPlayerState, loopInputs);
+        drawPlayer(localPlayerState);
+        drawMyServerPosition();
+        drawGameState();
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;
 
-        console.log(gameState)
         socket.emit('client-update', loopInputs);
         then = now - (delta % interval);
     }
