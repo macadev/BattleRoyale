@@ -1,7 +1,7 @@
 const SPEED = 2
 const FRICTION = 0.98
 
-function updatePlayerState(clientInputs, playerState) {
+function processInputs(clientInputs, playerState) {
     if (clientInputs.up) {
         if (playerState.velY > -SPEED) {
             playerState.velY--;
@@ -43,5 +43,5 @@ function updatePlayerState(clientInputs, playerState) {
 }
 
 module.exports = {
-    updatePlayerState: updatePlayerState
+    processInputs: processInputs
 }

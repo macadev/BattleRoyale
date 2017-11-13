@@ -1,12 +1,6 @@
-function randomColor(brightness){
-    function randomChannel(brightness){
-        var r = 255-brightness;
-        var n = 0|((Math.random() * r) + brightness);
-        var s = n.toString(16);
-        return (s.length==1) ? '0'+s : s;
-    }
-    return '#' + randomChannel(brightness) + randomChannel(brightness) + randomChannel(brightness);
-}
+import { randomColor } from './colour'
+import io from 'socket.io-client'
+import playerStateHandler from '../../game/playerStateHandler'
 
 document.addEventListener("DOMContentLoaded", function(event) {
     var canvas = document.getElementById("gameCanvas"),
@@ -14,9 +8,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     canvas.width = canvas.height = 300;
 
-    var speed = 2,
-        friction = 0.98,
-        playerColor = randomColor(120),
+    var playerColor = randomColor(120),
         keys = [];
 
     var localPlayerState = {
@@ -45,49 +37,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     socket.on('server-update', function(data) {
         gameState = data;
     });
-
-    function calculateNewPosition(playerState, inputs) {
-        if (inputs.up) {
-            if (playerState.velY > -speed) {
-                playerState.velY--;
-            }
-        }
-        
-        if (inputs.down) {
-            if (playerState.velY < speed) {
-                playerState.velY++;
-            }
-        }
-        if (inputs.right) {
-            if (playerState.velX < speed) {
-                playerState.velX++;
-            }
-        }
-        if (inputs.left) {
-            if (playerState.velX > -speed) {
-                playerState.velX--;
-            }
-        }
-
-        playerState.velY *= friction;
-        playerState.y += playerState.velY;
-        playerState.velX *= friction;
-        playerState.x += playerState.velX;
-
-        // TODO: Consider removing this. Server reconciliation 
-        // eliminates the need for boundary checking.
-        if (playerState.x >= 295) {
-            playerState.x = 295;
-        } else if (playerState.x <= 5) {
-            playerState.x = 5;
-        }
-
-        if (playerState.y > 295) {
-            playerState.y = 295;
-        } else if (playerState.y <= 5) {
-            playerState.y = 5;
-        }
-    }
 
     function drawPlayer(playerState) {
         ctx.beginPath();
@@ -136,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // Apply un-acked inputs on position indicated by server
         var serverPlayerState = Object.assign({}, gameState.playerStates[socket.id])
         for (let input of clientInputs) {
-            calculateNewPosition(serverPlayerState, input);
+            playerStateHandler.processInputs(input, serverPlayerState)
         }
 
         if (
@@ -170,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         serverReconciliation();
         
         ctx.clearRect(0, 0, 300, 300);
-        calculateNewPosition(localPlayerState, loopInputs);
+        playerStateHandler.processInputs(loopInputs, localPlayerState)
         drawPlayer(localPlayerState);
         drawMyServerPosition();
         drawGameState();
