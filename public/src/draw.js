@@ -23,7 +23,7 @@ export function drawGameState(gameState, ctx) {
         let playerData = gameState.playerStates[playerSocketId];
         ctx.beginPath();
         ctx.arc(playerData.x, playerData.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = playerData.color;
+        ctx.fillStyle = "blue";
         ctx.fill();
     }
 }
