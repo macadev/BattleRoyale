@@ -1,6 +1,9 @@
 import { randomColor } from './colour'
 import io from 'socket.io-client'
 import playerStateHandler from '../../game/playerStateHandler'
+import { drawPlayer, drawMyServerPosition, drawGameState } from './draw'
+
+export var socket
 
 document.addEventListener("DOMContentLoaded", function(event) {
     var canvas = document.getElementById("gameCanvas"),
@@ -8,14 +11,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     canvas.width = canvas.height = 300;
 
-    var playerColor = randomColor(120),
-        keys = [];
+    var keys = [];
 
     var localPlayerState = {
         x: 150,
         y: 150,
         velY: 0,
-        velX: 0
+        velX: 0,
+        colour: randomColor(120)
     }
 
     var fps = 60;
@@ -28,43 +31,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var clientInputs = [];
     var inputSeqNumber = 0;
 
-    var socket = io.connect();
+    socket = io.connect();
     socket.on('ack-join', function (data) {
         gameState = data
         // Server connected. Begin rendering game.
         gameLoop();
     });
+
     socket.on('server-update', function(data) {
         gameState = data;
     });
-
-    function drawPlayer(playerState) {
-        ctx.beginPath();
-        ctx.arc(playerState.x, playerState.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = playerColor;
-        ctx.fill();
-    }
-
-    function drawMyServerPosition() {
-        if (!gameState || !gameState.playerStates) return
-        let myServerPosition = gameState.playerStates[socket.id];
-        
-        ctx.beginPath();
-        ctx.arc(myServerPosition.x, myServerPosition.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "red";
-        ctx.fill();
-    }
-
-    function drawGameState() {
-        for (let playerSocketId in gameState.playerStates) {
-            if ([playerSocketId] == socket.id) continue;
-            let playerData = gameState.playerStates[playerSocketId];
-            ctx.beginPath();
-            ctx.arc(playerData.x, playerData.y, 5, 0, Math.PI * 2);
-            ctx.fillStyle = playerData.color;
-            ctx.fill();
-        }
-    }
 
     function serverReconciliation() {
         var inputToProcessIndex = 0;
@@ -112,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             down: keys[40],
             right: keys[39],
             left: keys[37],
-            color: playerColor,
+            color: localPlayerState.colour,
             sequenceNumber: inputSeqNumber
         }
 
@@ -120,9 +96,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         ctx.clearRect(0, 0, 300, 300);
         playerStateHandler.processInputs(loopInputs, localPlayerState)
-        drawPlayer(localPlayerState);
-        drawMyServerPosition();
-        drawGameState();
+        drawPlayer(localPlayerState, ctx);
+        drawMyServerPosition(gameState, ctx);
+        drawGameState(gameState, ctx);
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;
