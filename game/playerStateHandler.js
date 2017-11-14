@@ -3,30 +3,34 @@ const FRICTION = 0.98
 
 function processInputs(clientInputs, playerState) {
     if (clientInputs.up) {
-        if (playerState.velY > -SPEED) {
-            playerState.velY--;
-        }
+        // if (playerState.velY > -SPEED) {
+        //     playerState.velY--;
+        // }
+        playerState.velY = -2
     }
 
     if (clientInputs.down) {
-        if (playerState.velY < SPEED) {
-            playerState.velY++;
-        }
+        // if (playerState.velY < SPEED) {
+        //     playerState.velY++;
+        // }
+        playerState.velY = 2
     }
     if (clientInputs.right) {
-        if (playerState.velX < SPEED) {
-            playerState.velX++;
-        }
+        // if (playerState.velX < SPEED) {
+        //     playerState.velX++;
+        // }
+        playerState.velX = 2
     }
     if (clientInputs.left) {
-        if (playerState.velX > -SPEED) {
-            playerState.velX--;
-        }
+        // if (playerState.velX > -SPEED) {
+        //     playerState.velX--;
+        // }
+        playerState.velX = -2
     }
 
-    playerState.velY *= FRICTION;
+    // playerState.velY *= FRICTION;
     playerState.y += playerState.velY;
-    playerState.velX *= FRICTION;
+    // playerState.velX *= FRICTION;
     playerState.x += playerState.velX;
 
     if (playerState.x >= 295) {
@@ -40,6 +44,9 @@ function processInputs(clientInputs, playerState) {
     } else if (playerState.y <= 5) {
         playerState.y = 5;
     }
+
+    playerState.velX = 0;
+    playerState.velY = 0;
 }
 
 module.exports = {
