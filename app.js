@@ -1,6 +1,7 @@
 const express = require('express')
 const errorhandler = require('errorhandler')
 const playerStateHandler = require('./game/playerStateHandler')
+const serverConfig = require('./game/serverConfig')
 
 var app = express()
 var server = require('http').Server(app)
@@ -53,11 +54,8 @@ setInterval(() => {
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
     frameInputs = []
-}, 17)
-
-setInterval(() => {
     io.emit('server-update', gameState)
-}, 45)
+}, serverConfig.TIMESTEP)
 
 app.use(express.static('public', {}))
 

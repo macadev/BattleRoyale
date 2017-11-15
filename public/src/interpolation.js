@@ -1,3 +1,5 @@
-export function interpolateEntities() {
-    
+import { socket } from './clientGame'
+
+export function interpolateEntities(gameState) {
+
 }
