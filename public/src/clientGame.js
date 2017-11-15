@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     socket.on('server-update', function(updatedGameState) {
         processGameStateUpdateFromServer(updatedGameState, gameState);
-        console.log(gameState);
     });
 
     // This function is used in order to keep the position buffer up to date. This buffer
@@ -114,10 +113,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         serverReconciliation(clientInputs, gameState, localPlayerState)
-        // interpolateEntities();
+        playerStateHandler.processInputs(loopInputs, localPlayerState)
+        interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, 300, 300);
-        playerStateHandler.processInputs(loopInputs, localPlayerState)
         drawPlayer(localPlayerState, ctx);
         drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);
