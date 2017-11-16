@@ -1,3 +1,5 @@
+const canvasConfig = require('./canvasConfig')
+
 const SPEED = 2
 const FRICTION = 0.98
 
@@ -29,16 +31,16 @@ function processInputs(clientInputs, playerState) {
     playerState.velX *= FRICTION;
     playerState.x += playerState.velX;
 
-    if (playerState.x >= 295) {
-        playerState.x = 295;
-    } else if (playerState.x <= 5) {
-        playerState.x = 5;
+    if (playerState.x > canvasConfig.width - canvasConfig.edgeBuffer) {
+        playerState.x = canvasConfig.width - canvasConfig.edgeBuffer;
+    } else if (playerState.x <= 0 + canvasConfig.edgeBuffer) {
+        playerState.x = canvasConfig.edgeBuffer;
     }
 
-    if (playerState.y > 295) {
-        playerState.y = 295;
-    } else if (playerState.y <= 5) {
-        playerState.y = 5;
+    if (playerState.y > canvasConfig.height - canvasConfig.edgeBuffer) {
+        playerState.y = canvasConfig.height - canvasConfig.edgeBuffer;
+    } else if (playerState.y <= 0 + canvasConfig.edgeBuffer) {
+        playerState.y = canvasConfig.edgeBuffer;
     }
 }
 

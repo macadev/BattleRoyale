@@ -1,17 +1,19 @@
 import { randomColor } from './colour'
-import io from 'socket.io-client'
-import playerStateHandler from '../../game/playerStateHandler'
 import { drawPlayer, drawMyServerPosition, drawGameState } from './draw'
 import { serverReconciliation } from './reconciliation'
 import { interpolateEntities } from './interpolation'
+import io from 'socket.io-client'
+import playerStateHandler from '../../game/playerStateHandler'
+import canvasConfig from '../../game/canvasConfig'
 
 export var socket
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    var canvas = document.getElementById("gameCanvas"),
-    ctx = canvas.getContext("2d");
+    var canvas = document.getElementById("gameCanvas")
+    var ctx = canvas.getContext("2d")
 
-    canvas.width = canvas.height = 300;
+    canvas.width = canvasConfig.width
+    canvas.height = canvasConfig.height
 
     var keys = [];
 
@@ -116,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         playerStateHandler.processInputs(loopInputs, localPlayerState)
         interpolateEntities(gameState);
         
-        ctx.clearRect(0, 0, 300, 300);
+        ctx.clearRect(0, 0, canvasConfig.width, canvasConfig.height);
         drawPlayer(localPlayerState, ctx);
         drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);

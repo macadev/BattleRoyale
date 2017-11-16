@@ -1,4 +1,3 @@
-// In miliseconds
 module.exports = {
-    TIMESTEP: 300  
+    TIMESTEP: 30  // In miliseconds
 }
