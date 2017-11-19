@@ -1,5 +1,5 @@
 import playerStateHandler from '../../game/playerStateHandler'
-import { socket } from './clientGame'
+import { socket, fps } from './clientGame'
 
 export function serverReconciliation(clientInputs, gameState, localPlayerState) {
     var inputToProcessIndex = 0;
@@ -20,13 +20,16 @@ export function serverReconciliation(clientInputs, gameState, localPlayerState) 
     // Apply un-acked inputs on position indicated by server
     var serverPlayerState = Object.assign({}, gameState.playerStates[socket.id])
     for (let input of clientInputs) {
-        playerStateHandler.processInputs(input, serverPlayerState)
+        playerStateHandler.processInputs(input, serverPlayerState, 1/fps)
     }
 
     if (
         serverPlayerState.x !== localPlayerState.x || 
         serverPlayerState.y !== localPlayerState.y
     ) {
+        console.log("DO NOT COINCIDE!");
+        console.log("Diff X", localPlayerState.x - serverPlayerState.x);
+        console.log("Diff Y", localPlayerState.y - serverPlayerState.y);
         // Client and server do not coincide on the client position.
         // Enforce position dictated by the server.
         localPlayerState.x = serverPlayerState.x;

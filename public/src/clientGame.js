@@ -7,6 +7,7 @@ import playerStateHandler from '../../game/playerStateHandler'
 import canvasConfig from '../../game/canvasConfig'
 
 export var socket
+export var fps
 
 document.addEventListener("DOMContentLoaded", function(event) {
     var canvas = document.getElementById("gameCanvas")
@@ -22,10 +23,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
         y: 150,
         velY: 0,
         velX: 0,
+        accelerationX: 0,
+        accelerationY: 0,
         colour: randomColor(120)
     }
 
-    var fps = 60;
+    fps = 60;
     var now;
     var then = Date.now();
     var interval = 1000 / fps;
@@ -115,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         serverReconciliation(clientInputs, gameState, localPlayerState)
-        playerStateHandler.processInputs(loopInputs, localPlayerState)
+        playerStateHandler.processInputs(loopInputs, localPlayerState, 1 / fps)
         interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, canvasConfig.width, canvasConfig.height);

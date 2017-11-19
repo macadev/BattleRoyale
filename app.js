@@ -26,6 +26,8 @@ io.on('connection', (socket) => {
         y: 150,
         velX: 0,
         velY: 0,
+        accelerationX: 0,
+        accelerationY: 0,
         lastSeqNumber: -1
     }
     
@@ -50,7 +52,7 @@ setInterval(() => {
         if (!gameState.playerStates[frameInput.socketId]) return
         
         // Update player position on server. Acknowledge last input.
-        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId])
+        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], 1 / 33.33)
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
     frameInputs = []
