@@ -1,5 +1,6 @@
 import playerStateHandler from '../../game/playerStateHandler'
-import { socket, fps } from './clientGame'
+import { socket } from './clientGame'
+import { FREQUENCY } from '../../game/clientConfig'
 
 export function serverReconciliation(clientInputs, gameState, localPlayerState) {
     var inputToProcessIndex = 0;
@@ -20,7 +21,7 @@ export function serverReconciliation(clientInputs, gameState, localPlayerState) 
     // Apply un-acked inputs on position indicated by server
     var serverPlayerState = Object.assign({}, gameState.playerStates[socket.id])
     for (let input of clientInputs) {
-        playerStateHandler.processInputs(input, serverPlayerState, 1/fps)
+        playerStateHandler.processInputs(input, serverPlayerState, FREQUENCY)
     }
 
     if (

@@ -2,6 +2,7 @@ const express = require('express')
 const errorhandler = require('errorhandler')
 const playerStateHandler = require('./game/playerStateHandler')
 const serverConfig = require('./game/serverConfig')
+const clientConfig = require('./game/clientConfig')
 
 var app = express()
 var server = require('http').Server(app)
@@ -52,7 +53,7 @@ setInterval(() => {
         if (!gameState.playerStates[frameInput.socketId]) return
         
         // Update player position on server. Acknowledge last input.
-        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], 1 / 33.33)
+        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY)
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
     frameInputs = []

@@ -1,5 +1,5 @@
 module.exports = {
-    width: 800,
-    height: 600,
-    edgeBuffer: 5 // small distance to pad edges
+    WIDTH: 800,
+    HEIGHT: 600,
+    EDGE_BUFFER: 5 // small distance to pad edges
 }
