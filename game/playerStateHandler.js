@@ -1,11 +1,11 @@
-const canvasConfig = require('./canvasConfig')
+const tileMapConfig = require('./tileMapConfig')
 
-const GRAVITY  = 9.8 * 12 // default (exagerated) gravity
+const GRAVITY               = 9.8 * 12 // default (exagerated) gravity
 const MAX_HORIZONTAL_SPEED  = 120      // default max horizontal speed (15 tiles per second)
-const MAX_VERTICAL_SPEED    = 120      // default max vertical speed   (60 tiles per second)
-const ACCEL    = 45     
-const FRICTION = 1/8     // default take 1/6 second to stop from maxdx (horizontal friction)
-const IMPULSE  = 2000    // default player jump impulse
+const MAX_VERTICAL_SPEED    = 400      // default max vertical speed   (60 tiles per second)
+const ACCEL                 = 540     
+const FRICTION              = 0.98     // default take 1/6 second to stop from maxdx (horizontal friction)
+const IMPULSE               = 500    // default player jump impulse
 
 function processInputs(clientInputs, playerState, dt) {
     playerState.accelerationX = 0;
@@ -28,16 +28,19 @@ function processInputs(clientInputs, playerState, dt) {
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
     playerState.velY = bound(playerState.velY + (dt * playerState.accelerationY), -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
 
-    if (playerState.x > canvasConfig.WIDTH - canvasConfig.EDGE_BUFFER) {
-        playerState.x = canvasConfig.WIDTH - canvasConfig.EDGE_BUFFER;
-    } else if (playerState.x <= 0 + canvasConfig.EDGE_BUFFER) {
-        playerState.x = canvasConfig.EDGE_BUFFER;
+    console.log(playerState.velX);
+    playerState.velX = playerState.velX * FRICTION;
+
+    if (playerState.x > tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER) {
+        playerState.x = tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER;
+    } else if (playerState.x <= 0 + tileMapConfig.EDGE_BUFFER) {
+        playerState.x = tileMapConfig.EDGE_BUFFER;
     }
 
-    if (playerState.y > canvasConfig.HEIGHT - canvasConfig.EDGE_BUFFER) {
-        playerState.y = canvasConfig.HEIGHT - canvasConfig.EDGE_BUFFER;
-    } else if (playerState.y <= 0 + canvasConfig.EDGE_BUFFER) {
-        playerState.y = canvasConfig.EDGE_BUFFER;
+    if (playerState.y > tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER) {
+        playerState.y = tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER;
+    } else if (playerState.y <= 0 + tileMapConfig.EDGE_BUFFER) {
+        playerState.y = tileMapConfig.EDGE_BUFFER;
     }
 }
 

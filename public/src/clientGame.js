@@ -1,11 +1,11 @@
 import { randomColor } from './colour'
-import { drawPlayer, drawMyServerPosition, drawGameState } from './draw'
+import { drawPlayer, drawMyServerPosition, drawGameState, drawTileGrid } from './draw'
 import { serverReconciliation } from './reconciliation'
 import { interpolateEntities } from './interpolation'
 import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
 import io from 'socket.io-client'
 import playerStateHandler from '../../game/playerStateHandler'
-import canvasConfig from '../../game/canvasConfig'
+import tileMapConfig from '../../game/tileMapConfig'
 
 export var socket
 
@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var canvas = document.getElementById("gameCanvas")
     var ctx = canvas.getContext("2d")
 
-    canvas.width = canvasConfig.WIDTH
-    canvas.height = canvasConfig.HEIGHT
+    canvas.width = tileMapConfig.WIDTH
+    canvas.height = tileMapConfig.HEIGHT
 
     var keys = [];
 
@@ -119,7 +119,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY)
         interpolateEntities(gameState);
         
-        ctx.clearRect(0, 0, canvasConfig.WIDTH, canvasConfig.HEIGHT);
+        ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
+        drawTileGrid(ctx);
         drawPlayer(localPlayerState, ctx);
         drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);
