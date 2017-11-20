@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
         drawTileGrid(ctx);
         drawPlayer(localPlayerState, ctx);
-        drawMyServerPosition(gameState, ctx);
+        // drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);
         
         clientInputs.push(loopInputs);

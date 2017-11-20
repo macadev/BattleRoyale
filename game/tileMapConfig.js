@@ -6,5 +6,6 @@ const config = {
 
 config.WIDTH  = config.TILE * config.MAP.tw // 800
 config.HEIGHT = config.TILE * config.MAP.th // 640
+config.METER  = config.TILE // Helps us reasom about speed and acceleration
 
 module.exports = config
