@@ -1,5 +1,6 @@
 import { socket } from './clientGame'
 import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
+import { tcell } from '../../game/tileUtils'
 
 export function drawPlayer(playerState, ctx) {
     ctx.beginPath();
@@ -42,4 +43,14 @@ export function drawTileGrid(ctx) {
         ctx.lineTo(WIDTH, counter * TILE)
         ctx.stroke();
     }
+
+    for (let tileRow = 0; tileRow < MAP.th; tileRow++) {
+        for (let tileColumn = 0; tileColumn < MAP.tw; tileColumn++) {
+            if (tcell(tileColumn, tileRow) === 10) {
+                ctx.fillStyle = "#D95B43";
+                ctx.fillRect(tileColumn * TILE, tileRow * TILE, TILE, TILE);
+            }
+        }
+    }
+
 }

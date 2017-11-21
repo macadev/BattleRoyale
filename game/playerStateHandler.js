@@ -1,7 +1,7 @@
 const tileMapConfig = require('./tileMapConfig')
 
 const GRAVITY               = 9.8 * 12 // default (exagerated) gravity
-const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 20      // default max horizontal speed (15 tiles per second)
+const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 15      // default max horizontal speed (15 tiles per second)
 const MAX_VERTICAL_SPEED    = tileMapConfig.METER * 60      // default max vertical speed   (60 tiles per second)
 const ACCEL                 = MAX_HORIZONTAL_SPEED * 2     
 const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 second to stop from maxdx (horizontal friction)
