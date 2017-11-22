@@ -3,30 +3,23 @@ import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
 import { tcell } from '../../game/tileUtils'
 
 export function drawPlayer(playerState, ctx) {
-    ctx.beginPath();
-    ctx.arc(playerState.x, playerState.y, 5, 0, Math.PI * 2);
     ctx.fillStyle = "purple";
-    ctx.fill();
+    _fillPlayerRectangle(playerState.x, playerState.y, ctx);
 }
 
 export function drawMyServerPosition(gameState, ctx) {
     if (!gameState || !gameState.playerStates) return
     let myServerPosition = gameState.playerStates[socket.id];
-    
-    ctx.beginPath();
-    ctx.arc(myServerPosition.x, myServerPosition.y, 5, 0, Math.PI * 2);
     ctx.fillStyle = "red";
-    ctx.fill();
+    _fillPlayerRectangle(myServerPosition.x, myServerPosition.y, ctx);
 }
 
 export function drawGameState(gameState, ctx) {
     for (let playerSocketId in gameState.playerStates) {
         if (playerSocketId == socket.id) continue;
         let playerData = gameState.playerStates[playerSocketId];
-        ctx.beginPath();
-        ctx.arc(playerData.x, playerData.y, 5, 0, Math.PI * 2);
         ctx.fillStyle = "blue";
-        ctx.fill();
+        _fillPlayerRectangle(playerData.x, playerData.y, ctx);
     }
 }
 
@@ -43,7 +36,9 @@ export function drawTileGrid(ctx) {
         ctx.lineTo(WIDTH, counter * TILE)
         ctx.stroke();
     }
+}
 
+export function drawTiles(ctx) {
     for (let tileRow = 0; tileRow < MAP.th; tileRow++) {
         for (let tileColumn = 0; tileColumn < MAP.tw; tileColumn++) {
             if (tcell(tileColumn, tileRow) === 10) {
@@ -52,5 +47,8 @@ export function drawTileGrid(ctx) {
             }
         }
     }
+}
 
+function _fillPlayerRectangle(x, y, ctx) {
+    ctx.fillRect(x, y, TILE * 1.5, TILE * 2.5);
 }
