@@ -1,5 +1,5 @@
 import { randomColor } from './colour'
-import { drawPlayer, drawMyServerPosition, drawGameState, drawTileGrid } from './draw'
+import { drawPlayer, drawMyServerPosition, drawGameState, drawTileGrid, drawTiles } from './draw'
 import { serverReconciliation } from './reconciliation'
 import { interpolateEntities } from './interpolation'
 import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
         drawTileGrid(ctx);
+        drawTiles(ctx);
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);
