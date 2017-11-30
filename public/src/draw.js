@@ -1,8 +1,15 @@
 import { socket } from './clientGame'
 import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
-import { tcell } from '../../game/tileUtils'
+import { tcell, p2t } from '../../game/tileUtils'
+import { getSurroundingTiles } from '../../game/playerStateHandler'
 
 export function drawPlayer(playerState, ctx) {
+    let surrTiles = getSurroundingTiles(playerState, true);
+    for (let tile of surrTiles) {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    }
+
     ctx.fillStyle = "purple";
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);
 }

@@ -1,7 +1,7 @@
 const tileMapConfig = require('./tileMapConfig')
 const tileUtils = require('./tileUtils')
 
-const GRAVITY               = 9.8 * 12 // default (exagerated) gravity
+const GRAVITY               = 9.8 * 22 // default (exagerated) gravity
 const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 15      // default max horizontal speed (15 tiles per second)
 const MAX_VERTICAL_SPEED    = tileMapConfig.METER * 60      // default max vertical speed   (60 tiles per second)
 const ACCEL                 = MAX_HORIZONTAL_SPEED * 2     
@@ -31,8 +31,48 @@ function processInputs(clientInputs, playerState, dt) {
         playerState.accelerationX = playerState.accelerationX + FRICTION;
     }
 
+    let old_x = playerState.x;
+    let old_y = playerState.y;
+
     playerState.x  = playerState.x  + (dt * playerState.velX);
+    let surroundingWalls = getSurroundingTiles(playerState);
+
+    let x_overlaps;
+    let y_overlaps;
+    let collision;
+    let collision_occurred = false;
+    for (let wall of surroundingWalls) {
+        x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + tileMapConfig.TILE * 1.5 > wall.x)
+        y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + tileMapConfig.TILE * 2.5 > wall.y)
+        collision = x_overlaps && y_overlaps
+        if (collision) {
+            collision_occurred = true;
+        }
+    }
+
+    if (collision_occurred) {
+        playerState.x = old_x;
+        playerState.velX = 0;
+    }
+
     playerState.y  = playerState.y  + (dt * playerState.velY);
+    surroundingWalls = getSurroundingTiles(playerState);
+    
+    collision_occurred = false;
+    for (let wall of surroundingWalls) {
+        x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + tileMapConfig.TILE * 1.5 > wall.x)
+        y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + tileMapConfig.TILE * 2.5 > wall.y)
+        collision = x_overlaps && y_overlaps
+        if (collision) {
+            collision_occurred = true;
+        }
+    }
+
+    if (collision_occurred) {
+        playerState.y = old_y;
+        playerState.velY = 0;
+    }
+
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
     playerState.velY = bound(playerState.velY + (dt * playerState.accelerationY), -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
 
@@ -40,77 +80,68 @@ function processInputs(clientInputs, playerState, dt) {
         playerState.velX = 0; // clamp at zero to prevent friction from making us jiggle side to side
     }
 
+    if (playerState.x > tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER) {
+        playerState.x = tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER;
+    } else if (playerState.x <= 0 + tileMapConfig.EDGE_BUFFER) {
+        playerState.x = tileMapConfig.EDGE_BUFFER;
+    }
+
+    if (playerState.y > tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER) {
+        playerState.y = tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER;
+    } else if (playerState.y <= 0 + tileMapConfig.EDGE_BUFFER) {
+        playerState.y = tileMapConfig.EDGE_BUFFER;
+    }
+}
+
+function getSurroundingTiles(playerState, allTiles) {
     let TOP_EDGE_Y =  playerState.y;
     let LEFT_EDGE_X = playerState.x;
     let RIGHT_EDGE_X = playerState.x + tileMapConfig.TILE * 1.5;
     let BOTTOM_EDGE_Y = playerState.y + tileMapConfig.TILE * 2.5;
     
-    let UPPER_LEFT_CORNER_X = playerState.x;
-    let UPPER_RIGHT_CORNER_X = playerState.x + tileMapConfig.TILE * 1.5;
+    let vertical_tile_indexes = new Set();
+    let horizontal_tile_indexes = new Set();
 
-    let bottomRightCornerTile = tileUtils.cell(RIGHT_EDGE_X, BOTTOM_EDGE_Y);
-    let bottomLeftCornerTile = tileUtils.cell(LEFT_EDGE_X, BOTTOM_EDGE_Y);
-    let bottomMiddleTile = tileUtils.cell(playerState.x + tileMapConfig.TILE * 0.75, BOTTOM_EDGE_Y);
-
-    let topLeftCornerTile = tileUtils.cell(LEFT_EDGE_X, TOP_EDGE_Y);
-    let topRightCornerTile = tileUtils.cell(RIGHT_EDGE_X, TOP_EDGE_Y);
-    let topMiddleTile = tileUtils.cell(playerState.x + tileMapConfig * 0.75);
-
-    if (playerState.velY > 0) {
-        // Player moving downwards
-        if (bottomLeftCornerTile === 10 || bottomRightCornerTile === 10 || bottomMiddleTile === 10) {
-            console.log("Collision on bottom edge detected.");
-            playerState.y = playerState.y - BOTTOM_EDGE_Y % tileMapConfig.TILE;
-            playerState.velY = 0;
+    let tileDistVert = TOP_EDGE_Y;
+    while (tileDistVert < BOTTOM_EDGE_Y) {
+        vertical_tile_indexes.add(tileUtils.p2t(tileDistVert));
+        
+        if (tileDistVert + tileMapConfig.TILE > BOTTOM_EDGE_Y) {
+            vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y));
+            break;
         }
-    } else if (playerState.velY < 0) {
-        // Player moving upwards
-        if (topLeftCornerTile === 10 || topRightCornerTile === 10 || topMiddleTile === 10) {
-            console.log("Collision on top edge detected");
-            playerState.y = playerState.y + (tileMapConfig.TILE - TOP_EDGE_Y % tileMapConfig.TILE);
-            playerState.velY = 0;
-        }
+
+        tileDistVert += 32;
     }
 
-    TOP_EDGE_Y =  playerState.y;
-    LEFT_EDGE_X = playerState.x;
-    RIGHT_EDGE_X = playerState.x + tileMapConfig.TILE * 1.5;
-    BOTTOM_EDGE_Y = playerState.y + tileMapConfig.TILE * 2.5;
+    let tileDistHor = LEFT_EDGE_X;
+    while (tileDistHor <= RIGHT_EDGE_X) {
+        horizontal_tile_indexes.add(tileUtils.p2t(tileDistHor));
+
+        if (tileDistHor + tileMapConfig.TILE > RIGHT_EDGE_X) {
+            horizontal_tile_indexes.add(tileUtils.p2t(RIGHT_EDGE_X));
+            break;
+        }
+
+        tileDistHor += 32;
+    }
+
+    let surroundingWalls = []
+    for (let vertIndex of vertical_tile_indexes) {
+        for (let horIndex of horizontal_tile_indexes) {
+            if (!allTiles) {
+                if (tileUtils.tcell(horIndex, vertIndex) !== 10) continue; 
+            }
+            surroundingWalls.push({
+                x: tileUtils.t2p(horIndex),
+                y: tileUtils.t2p(vertIndex),
+                width: tileMapConfig.TILE,
+                height: tileMapConfig.TILE
+            })
+        }
+    }
     
-    UPPER_LEFT_CORNER_X = playerState.x;
-    UPPER_RIGHT_CORNER_X = playerState.x + tileMapConfig.TILE * 1.5;
-
-    bottomRightCornerTile = tileUtils.cell(RIGHT_EDGE_X, BOTTOM_EDGE_Y);
-    bottomLeftCornerTile = tileUtils.cell(LEFT_EDGE_X, BOTTOM_EDGE_Y);
-    bottomMiddleTile = tileUtils.cell(playerState.x + tileMapConfig.TILE * 0.75, BOTTOM_EDGE_Y);
-
-    topLeftCornerTile = tileUtils.cell(LEFT_EDGE_X, TOP_EDGE_Y);
-    topRightCornerTile = tileUtils.cell(RIGHT_EDGE_X, TOP_EDGE_Y);
-    topMiddleTile = tileUtils.cell(playerState.x + tileMapConfig * 0.75);
-
-    let leftEdgeMiddleTile = tileUtils.cell(LEFT_EDGE_X, playerState.y + playerState.y * 1.25);
-    let rightEdgeMiddleTile = tileUtils.cell(RIGHT_EDGE_X, playerState.y + playerState.y * 1.25);
-
-    if (playerState.velX < 0) {
-        // Player moving left
-        if (topLeftCornerTile === 10 || bottomLeftCornerTile === 10 || leftEdgeMiddleTile === 10) {
-            console.log("Collision detected on left edge");
-            playerState.x = playerState.x + (tileMapConfig.TILE - playerState.x % 32);
-            playerState.velX = 0;
-        }
-    }
-
-    // if (playerState.x > tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER) {
-    //     playerState.x = tileMapConfig.WIDTH - tileMapConfig.EDGE_BUFFER;
-    // } else if (playerState.x <= 0 + tileMapConfig.EDGE_BUFFER) {
-    //     playerState.x = tileMapConfig.EDGE_BUFFER;
-    // }
-
-    // if (playerState.y > tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER) {
-    //     playerState.y = tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER;
-    // } else if (playerState.y <= 0 + tileMapConfig.EDGE_BUFFER) {
-    //     playerState.y = tileMapConfig.EDGE_BUFFER;
-    // }
+    return surroundingWalls;
 }
 
 function bound(x, min, max) {
@@ -118,5 +149,6 @@ function bound(x, min, max) {
 }
 
 module.exports = {
-    processInputs: processInputs
+    processInputs: processInputs,
+    getSurroundingTiles: getSurroundingTiles
 }
