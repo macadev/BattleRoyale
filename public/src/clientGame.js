@@ -134,9 +134,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     document.body.addEventListener("keydown", function (e) {
+        e.preventDefault();
         keys[e.keyCode] = true;
     });
     document.body.addEventListener("keyup", function (e) {
+        e.preventDefault();
         keys[e.keyCode] = false;
     });
 });

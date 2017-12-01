@@ -6,7 +6,7 @@ const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 15      // default max horiz
 const MAX_VERTICAL_SPEED    = tileMapConfig.METER * 60      // default max vertical speed   (60 tiles per second)
 const ACCEL                 = MAX_HORIZONTAL_SPEED * 2     
 const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 second to stop from maxdx (horizontal friction)
-const IMPULSE               = 3000    // default player jump impulse
+const IMPULSE               = 1500    // default player jump impulse
 
 function processInputs(clientInputs, playerState, dt) {
     let wasleft    = playerState.velX  < 0;
@@ -87,9 +87,11 @@ function processInputs(clientInputs, playerState, dt) {
     }
 
     if (playerState.y > tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER) {
-        playerState.y = tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER;
+        playerState.y = tileMapConfig.HEIGHT - tileMapConfig.EDGE_BUFFER - 1;
+        playerState.velY = 0;
     } else if (playerState.y <= 0 + tileMapConfig.EDGE_BUFFER) {
-        playerState.y = tileMapConfig.EDGE_BUFFER;
+        playerState.y = tileMapConfig.EDGE_BUFFER + 1;
+        playerState.velY = 0;
     }
 }
 
