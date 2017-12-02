@@ -76,6 +76,8 @@ function processInputs(clientInputs, playerState, dt) {
         tilesUnderPlayer.forEach((tile) => {
             if (tile.isWall) playerState.jumping = false;
         })
+    } else {
+        playerState.jumping = true;
     }
 
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
@@ -141,7 +143,7 @@ function getTilesUnderPlayer(playerState) {
 
         tileDistHor += 32;
     }
-    
+
     return tilesUnderPlayer;
 }
 
