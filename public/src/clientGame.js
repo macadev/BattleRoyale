@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         y: 150,
         velY: 0,
         velX: 0,
+        jumping: true,
         accelerationX: 0,
         accelerationY: 0,
         colour: randomColor(120)
@@ -84,7 +85,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }
 
             // Don't need to store position buffer for the client's player
-            if (playerSocketId === socket.id) continue;
+            if (playerSocketId === socket.id) {
+                continue;
+            }
 
             if (!localGameState.playerStates[playerSocketId].posBuffer) {
                 localGameState.playerStates[playerSocketId].posBuffer = []    
@@ -122,9 +125,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
         drawTileGrid(ctx);
         drawTiles(ctx);
-        drawPlayer(localPlayerState, ctx);
-        // drawMyServerPosition(gameState, ctx);
         drawGameState(gameState, ctx);
+        drawPlayer(localPlayerState, ctx);
+        drawMyServerPosition(gameState, ctx);
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;
@@ -134,11 +137,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     document.body.addEventListener("keydown", function (e) {
-        e.preventDefault();
-        keys[e.keyCode] = true;
+        let keyCode = e.keyCode;
+        if (keyCode === 38 || keyCode === 40 || keyCode === 39 || keyCode === 37) {
+            e.preventDefault();
+            keys[keyCode] = true;    
+        }
     });
     document.body.addEventListener("keyup", function (e) {
-        e.preventDefault();
-        keys[e.keyCode] = false;
+        let keyCode = e.keyCode;
+        if (keyCode === 38 || keyCode === 40 || keyCode === 39 || keyCode === 37) {
+            e.preventDefault();
+            keys[keyCode] = false;    
+        }
     });
 });

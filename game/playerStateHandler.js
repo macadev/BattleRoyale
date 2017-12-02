@@ -8,7 +8,7 @@ const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 15      // default max horiz
 const MAX_VERTICAL_SPEED    = tileMapConfig.METER * 60      // default max vertical speed   (60 tiles per second)
 const ACCEL                 = MAX_HORIZONTAL_SPEED * 2     
 const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 second to stop from maxdx (horizontal friction)
-const IMPULSE               = 1500    // default player jump impulse
+const IMPULSE               = 10000    // default player jump impulse
 
 function processInputs(clientInputs, playerState, dt) {
     let wasleft    = playerState.velX  < 0;
@@ -17,8 +17,9 @@ function processInputs(clientInputs, playerState, dt) {
     playerState.accelerationX = 0;
     playerState.accelerationY = GRAVITY;
 
-    if (clientInputs.up) {
+    if (clientInputs.up && !playerState.jumping) {
         playerState.accelerationY = playerState.accelerationY - IMPULSE;
+        playerState.jumping = true;
     }
 
     if (clientInputs.right) {
@@ -60,10 +61,21 @@ function processInputs(clientInputs, playerState, dt) {
         x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
         y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
         collision_occurred = x_overlaps && y_overlaps
+
         if (collision_occurred) {
             playerState.y = old_y;
             playerState.velY = 0;
+            break;
         }
+    }
+
+    // check if player is standing on floor
+    let tilesUnderPlayer = getTilesUnderPlayer(playerState);
+    let collidingWithFloor = false;
+    if (collision_occurred) {
+        tilesUnderPlayer.forEach((tile) => {
+            if (tile.isWall) playerState.jumping = false;
+        })
     }
 
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
@@ -73,7 +85,6 @@ function processInputs(clientInputs, playerState, dt) {
         playerState.velX = 0; // clamp at zero to prevent friction from making us jiggle side to side
     }
 
-    // Tile Grid boundaries
     handleCollisionsWithTileGridBoundaries(playerState);
 }
 
@@ -93,6 +104,45 @@ function handleCollisionsWithTileGridBoundaries(playerState) {
         playerState.y = tileMapConfig.HEIGHT;
         playerState.velY = 0;
     }
+}
+
+function getTilesUnderPlayer(playerState) {
+    let LEFT_EDGE_X = playerState.x;
+    let RIGHT_EDGE_X = playerState.x + getWidthOfPlayerPixels();
+    let BOTTOM_EDGE_Y = playerState.y + getHeightOfPlayerPixels();
+    
+    let rowUnderPlayerPixels = tileUtils.t2p(tileUtils.p2t(BOTTOM_EDGE_Y) + 1);
+
+    let tileDistHor = LEFT_EDGE_X; // 164.4 // 212.4
+    let tilesUnderPlayer = [];
+    let edgeOfHorizontalDist;
+    while (tileDistHor <= RIGHT_EDGE_X) {
+        edgeOfHorizontalDist = tileUtils.t2p(tileUtils.p2t(tileDistHor));
+        tilesUnderPlayer.push({
+            x: edgeOfHorizontalDist,
+            y: rowUnderPlayerPixels,
+            width: tileMapConfig.TILE,
+            height: tileMapConfig.TILE,
+            isWall: (tileUtils.cell(edgeOfHorizontalDist, rowUnderPlayerPixels) === 10)
+        });
+
+        if (tileDistHor + tileMapConfig.TILE > RIGHT_EDGE_X) {
+            edgeOfHorizontalDist = tileUtils.t2p(tileUtils.p2t(RIGHT_EDGE_X));
+            tilesUnderPlayer.push({
+                x: edgeOfHorizontalDist,
+                y: rowUnderPlayerPixels,
+                width: tileMapConfig.TILE,
+                height: tileMapConfig.TILE,
+                isWall: (tileUtils.cell(edgeOfHorizontalDist, rowUnderPlayerPixels) === 10)
+            });
+            
+            break;
+        }
+
+        tileDistHor += 32;
+    }
+    
+    return tilesUnderPlayer;
 }
 
 function getSurroundingTiles(playerState, allTiles) {
@@ -152,5 +202,6 @@ function bound(x, min, max) {
 
 module.exports = {
     processInputs: processInputs,
-    getSurroundingTiles: getSurroundingTiles
+    getSurroundingTiles: getSurroundingTiles,
+    getTilesUnderPlayer: getTilesUnderPlayer
 }
