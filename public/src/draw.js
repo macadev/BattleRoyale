@@ -2,6 +2,7 @@ import { socket } from './clientGame'
 import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
 import { tcell, p2t } from '../../game/tileUtils'
 import { getSurroundingTiles } from '../../game/playerStateHandler'
+import { getHeightOfPlayerPixels, getWidthOfPlayerPixels } from '../../game/playerUtils'
 
 export function drawPlayer(playerState, ctx) {
     let surrTiles = getSurroundingTiles(playerState, true);
@@ -57,5 +58,5 @@ export function drawTiles(ctx) {
 }
 
 function _fillPlayerRectangle(x, y, ctx) {
-    ctx.fillRect(x, y, TILE * 1.5, TILE * 2.5);
+    ctx.fillRect(x, y, getWidthOfPlayerPixels(), getHeightOfPlayerPixels());
 }
