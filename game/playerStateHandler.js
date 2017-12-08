@@ -34,51 +34,101 @@ function processInputs(clientInputs, playerState, dt) {
         playerState.accelerationX = playerState.accelerationX + FRICTION;
     }
 
-    let old_x = playerState.x;
-    let old_y = playerState.y;
+    // let old_x = playerState.x;
+    // let old_y = playerState.y;
+
+    // let surroundingWalls = getSurroundingTiles(playerState);
+    // let x_overlaps, y_overlaps;
+    // let collision_occurred;
+    // for (let wall of surroundingWalls) {
+    //     x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
+    //     y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
+    //     collision_occurred = x_overlaps && y_overlaps
+    //     if (collision_occurred) {
+    //         playerState.x = old_x;
+    //         playerState.velX = 0;
+    //         break;
+    //     }
+    // }
 
     playerState.x  = playerState.x  + (dt * playerState.velX);
     
-    let surroundingWalls = getSurroundingTiles(playerState);
-    let x_overlaps, y_overlaps;
-    let collision_occurred;
-    for (let wall of surroundingWalls) {
-        x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
-        y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
-        collision_occurred = x_overlaps && y_overlaps
-        if (collision_occurred) {
-            playerState.x = old_x;
-            playerState.velX = 0;
-            break;
+    let tilesVerticalEdges = getTilesOnTheVerticalEdges(playerState);
+    if (playerState.velX > 0) {
+        // moving right
+        for (let tileOnRightEdge of tilesVerticalEdges.rightEdge) {
+            if (tileOnRightEdge.isWall) {
+                // collision occurred
+                playerState.x = tileOnRightEdge.x - getWidthOfPlayerPixels();
+                playerState.velX = 0;
+                break;
+            }
+        }
+    } else if (playerState.velX < 0) {
+        // moving left
+        for (let tileOnLeftEdge of tilesVerticalEdges.leftEdge) {
+            if (tileOnLeftEdge.isWall) {
+                // collision occurred
+                playerState.x = tileOnLeftEdge.x + tileMapConfig.TILE;
+                playerState.velX = 0;
+                break;
+            }
         }
     }
 
     playerState.y  = playerState.y  + (dt * playerState.velY);
     
-    surroundingWalls = getSurroundingTiles(playerState);
-    collision_occurred = false;
-    for (let wall of surroundingWalls) {
-        x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
-        y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
-        collision_occurred = x_overlaps && y_overlaps
-
-        if (collision_occurred) {
-            playerState.y = old_y;
-            playerState.velY = 0;
-            break;
+        let tilesHorizontalEdges = getTilesOnTheHorizontalEdges(playerState);
+        let collision = false;
+        if (playerState.velY > 0) {
+            // moving downwards
+            for (let tileOnBottomEdge of tilesHorizontalEdges.bottomEdge) {
+                if (tileOnBottomEdge.isWall) {
+                    // collision occurred
+                    playerState.y = tileOnBottomEdge.y - getHeightOfPlayerPixels();
+                    playerState.velY = 0;
+                    playerState.jumping = false;
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision) playerState.jumping = true;
+        } else if (playerState.velY < 0) {
+            // moving upwards
+            for (let tileOnTopEdge of tilesHorizontalEdges.topEdge) {
+                if (tileOnTopEdge.isWall) {
+                    // collision occurred
+                    playerState.y = tileOnTopEdge.y + tileMapConfig.TILE;
+                    playerState.velY = 0;
+                    break;
+                }
+            }
         }
-    }
+    
+    // surroundingWalls = getSurroundingTiles(playerState);
+    // collision_occurred = false;
+    // for (let wall of surroundingWalls) {
+    //     x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
+    //     y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
+    //     collision_occurred = x_overlaps && y_overlaps
 
-    // check if player is standing on floor
-    let tilesUnderPlayer = getTilesUnderPlayer(playerState);
-    let collidingWithFloor = false;
-    if (collision_occurred) {
-        tilesUnderPlayer.forEach((tile) => {
-            if (tile.isWall) playerState.jumping = false;
-        })
-    } else {
-        playerState.jumping = true;
-    }
+    //     if (collision_occurred) {
+    //         playerState.y = old_y;
+    //         playerState.velY = 0;
+    //         break;
+    //     }
+    // }
+
+    // // check if player is standing on floor
+    // let tilesUnderPlayer = getTilesUnderPlayer(playerState);
+    // let collidingWithFloor = false;
+    // if (collision_occurred) {
+    //     tilesUnderPlayer.forEach((tile) => {
+    //         if (tile.isWall) playerState.jumping = false;
+    //     })
+    // } else {
+    //     playerState.jumping = true;
+    // }
 
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
     playerState.velY = bound(playerState.velY + (dt * playerState.accelerationY), -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
@@ -103,9 +153,105 @@ function handleCollisionsWithTileGridBoundaries(playerState) {
         playerState.y = 0;
         playerState.velY = 0;
     } else if (playerState.y + getHeightOfPlayerPixels() > tileMapConfig.HEIGHT) {
-        playerState.y = tileMapConfig.HEIGHT;
+        playerState.y = tileMapConfig.HEIGHT + getHeightOfPlayerPixels();
         playerState.velY = 0;
     }
+}
+
+function getTilesOnTheVerticalEdges(playerState) {
+    let TOP_EDGE_Y = playerState.y;
+    let BOTTOM_EDGE_Y = playerState.y + getHeightOfPlayerPixels();
+    let LEFT_EDGE_X = playerState.x;
+    let RIGHT_EDGE_X = playerState.x + getWidthOfPlayerPixels();
+    
+    let LEFT_EDGE_TILE_INDEX = tileUtils.p2t(LEFT_EDGE_X);
+    let RIGHT_EDGE_TILE_INDEX = tileUtils.p2t(RIGHT_EDGE_X);
+    
+    let vertical_tile_indexes = new Set();
+    let tileDistVert = TOP_EDGE_Y;
+    while (tileDistVert < BOTTOM_EDGE_Y) {
+        vertical_tile_indexes.add(tileUtils.p2t(tileDistVert));
+        
+        if (tileDistVert + tileMapConfig.TILE >= BOTTOM_EDGE_Y) {
+            if (BOTTOM_EDGE_Y % tileMapConfig.TILE === 0) {
+                vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y - 1));
+            } else {
+                vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y));
+            }
+            break;
+        }
+
+        tileDistVert += tileMapConfig.TILE;
+    }
+
+    let tilesVerticalEdges = {
+        leftEdge: [],
+        rightEdge: []
+    }
+    for (let vertIndex of vertical_tile_indexes) {
+        tilesVerticalEdges.leftEdge.push({
+            x: tileUtils.t2p(LEFT_EDGE_TILE_INDEX),
+            y: tileUtils.t2p(vertIndex),
+            width: tileMapConfig.TILE,
+            height: tileMapConfig.TILE,
+            isWall: (tileUtils.tcell(LEFT_EDGE_TILE_INDEX, vertIndex) === 10)
+        })
+
+        tilesVerticalEdges.rightEdge.push({
+            x: tileUtils.t2p(RIGHT_EDGE_TILE_INDEX),
+            y: tileUtils.t2p(vertIndex),
+            width: tileMapConfig.TILE,
+            height: tileMapConfig.TILE,
+            isWall: (tileUtils.tcell(RIGHT_EDGE_TILE_INDEX, vertIndex) === 10)
+        })
+    }
+    return tilesVerticalEdges;
+}
+
+function getTilesOnTheHorizontalEdges(playerState) {
+    let TOP_EDGE_Y = playerState.y;
+    let BOTTOM_EDGE_Y = playerState.y + getHeightOfPlayerPixels();
+    let LEFT_EDGE_X = playerState.x;
+    let RIGHT_EDGE_X = playerState.x + getWidthOfPlayerPixels();
+    
+    let TOP_EDGE_TILE_INDEX = tileUtils.p2t(TOP_EDGE_Y);
+    let BOTTOM_EDGE_TILE_INDEX = tileUtils.p2t(BOTTOM_EDGE_Y);
+    
+    let horizontal_tile_indexes = new Set();
+    let tileDistHorizontal = LEFT_EDGE_X;
+    while (tileDistHorizontal < RIGHT_EDGE_X) {
+        horizontal_tile_indexes.add(tileUtils.p2t(tileDistHorizontal));
+        
+        if (tileDistHorizontal + tileMapConfig.TILE > RIGHT_EDGE_X) {
+            horizontal_tile_indexes.add(tileUtils.p2t(RIGHT_EDGE_X));
+            break;
+        }
+
+        tileDistHorizontal += tileMapConfig.TILE;
+    }
+
+    let tilesHorizontalEdges = {
+        topEdge: [],
+        bottomEdge: []
+    }
+    for (let horIndex of horizontal_tile_indexes) {
+        tilesHorizontalEdges.topEdge.push({
+            x: tileUtils.t2p(horIndex),
+            y: tileUtils.t2p(TOP_EDGE_TILE_INDEX),
+            width: tileMapConfig.TILE,
+            height: tileMapConfig.TILE,
+            isWall: (tileUtils.tcell(horIndex, TOP_EDGE_TILE_INDEX) === 10)
+        })
+
+        tilesHorizontalEdges.bottomEdge.push({
+            x: tileUtils.t2p(horIndex),
+            y: tileUtils.t2p(BOTTOM_EDGE_TILE_INDEX),
+            width: tileMapConfig.TILE,
+            height: tileMapConfig.TILE,
+            isWall: (tileUtils.tcell(horIndex, BOTTOM_EDGE_TILE_INDEX) === 10)
+        })
+    }
+    return tilesHorizontalEdges;
 }
 
 function getTilesUnderPlayer(playerState) {
@@ -115,7 +261,7 @@ function getTilesUnderPlayer(playerState) {
     
     let rowUnderPlayerPixels = tileUtils.t2p(tileUtils.p2t(BOTTOM_EDGE_Y) + 1);
 
-    let tileDistHor = LEFT_EDGE_X; // 164.4 // 212.4
+    let tileDistHor = LEFT_EDGE_X;
     let tilesUnderPlayer = [];
     let edgeOfHorizontalDist;
     while (tileDistHor <= RIGHT_EDGE_X) {
@@ -143,7 +289,6 @@ function getTilesUnderPlayer(playerState) {
 
         tileDistHor += 32;
     }
-
     return tilesUnderPlayer;
 }
 
@@ -205,5 +350,7 @@ function bound(x, min, max) {
 module.exports = {
     processInputs: processInputs,
     getSurroundingTiles: getSurroundingTiles,
-    getTilesUnderPlayer: getTilesUnderPlayer
+    getTilesUnderPlayer: getTilesUnderPlayer,
+    getTilesOnTheHorizontalEdges: getTilesOnTheHorizontalEdges,
+    getTilesOnTheVerticalEdges: getTilesOnTheVerticalEdges
 }

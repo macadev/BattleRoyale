@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         drawTiles(ctx);
         drawGameState(gameState, ctx);
         drawPlayer(localPlayerState, ctx);
-        drawMyServerPosition(gameState, ctx);
+        // drawMyServerPosition(gameState, ctx);
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;

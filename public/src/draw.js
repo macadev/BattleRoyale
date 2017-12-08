@@ -1,24 +1,34 @@
 import { socket } from './clientGame'
 import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
 import { tcell, p2t } from '../../game/tileUtils'
-import { getSurroundingTiles, getTilesUnderPlayer } from '../../game/playerStateHandler'
+import { getSurroundingTiles, getTilesUnderPlayer, getTilesOnTheHorizontalEdges, getTilesOnTheVerticalEdges } from '../../game/playerStateHandler'
 import { getHeightOfPlayerPixels, getWidthOfPlayerPixels } from '../../game/playerUtils'
 
 export function drawPlayer(playerState, ctx) {
-    let surrTiles = getSurroundingTiles(playerState, true);
-    for (let tile of surrTiles) {
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    }
+    // let tilesVertEdges = getTilesOnTheVerticalEdges(playerState);
+    // for (let tile of tilesVertEdges.leftEdge) {
+    //     ctx.fillStyle = "yellow";
+    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    // }
+
+    // for (let tile of tilesVertEdges.rightEdge) {
+    //     ctx.fillStyle = "yellow";
+    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    // }
+
+    // let tilesHorEdges = getTilesOnTheHorizontalEdges(playerState);
+    // for (let tile of tilesHorEdges.topEdge) {
+    //     ctx.fillStyle = "green";
+    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    // }
+
+    // for (let tile of tilesHorEdges.bottomEdge) {
+    //     ctx.fillStyle = "green";
+    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    // }
 
     ctx.fillStyle = "purple";
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);
-
-    let tilesUnderPlayer = getTilesUnderPlayer(playerState, true);
-    for (let tile of tilesUnderPlayer) {
-        ctx.fillStyle = "green";
-        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    }
 }
 
 export function drawMyServerPosition(gameState, ctx) {
