@@ -5,27 +5,27 @@ import { getSurroundingTiles, getTilesUnderPlayer, getTilesOnTheHorizontalEdges,
 import { getHeightOfPlayerPixels, getWidthOfPlayerPixels } from '../../game/playerUtils'
 
 export function drawPlayer(playerState, ctx) {
-    // let tilesVertEdges = getTilesOnTheVerticalEdges(playerState);
-    // for (let tile of tilesVertEdges.leftEdge) {
-    //     ctx.fillStyle = "yellow";
-    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    // }
+    let tilesVertEdges = getTilesOnTheVerticalEdges(playerState);
+    for (let tile of tilesVertEdges.leftEdge) {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    }
 
-    // for (let tile of tilesVertEdges.rightEdge) {
-    //     ctx.fillStyle = "yellow";
-    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    // }
+    for (let tile of tilesVertEdges.rightEdge) {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    }
 
-    // let tilesHorEdges = getTilesOnTheHorizontalEdges(playerState);
-    // for (let tile of tilesHorEdges.topEdge) {
-    //     ctx.fillStyle = "green";
-    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    // }
+    let tilesHorEdges = getTilesOnTheHorizontalEdges(playerState);
+    for (let tile of tilesHorEdges.topEdge) {
+        ctx.fillStyle = "green";
+        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    }
 
-    // for (let tile of tilesHorEdges.bottomEdge) {
-    //     ctx.fillStyle = "green";
-    //     ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
-    // }
+    for (let tile of tilesHorEdges.bottomEdge) {
+        ctx.fillStyle = "green";
+        ctx.fillRect(p2t(tile.x) * TILE, p2t(tile.y) * TILE, TILE, TILE);
+    }
 
     ctx.fillStyle = "purple";
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);

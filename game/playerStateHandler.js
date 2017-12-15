@@ -34,23 +34,6 @@ function processInputs(clientInputs, playerState, dt) {
         playerState.accelerationX = playerState.accelerationX + FRICTION;
     }
 
-    // let old_x = playerState.x;
-    // let old_y = playerState.y;
-
-    // let surroundingWalls = getSurroundingTiles(playerState);
-    // let x_overlaps, y_overlaps;
-    // let collision_occurred;
-    // for (let wall of surroundingWalls) {
-    //     x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
-    //     y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
-    //     collision_occurred = x_overlaps && y_overlaps
-    //     if (collision_occurred) {
-    //         playerState.x = old_x;
-    //         playerState.velX = 0;
-    //         break;
-    //     }
-    // }
-
     playerState.x  = playerState.x  + (dt * playerState.velX);
     
     let tilesVerticalEdges = getTilesOnTheVerticalEdges(playerState);
@@ -78,57 +61,32 @@ function processInputs(clientInputs, playerState, dt) {
 
     playerState.y  = playerState.y  + (dt * playerState.velY);
     
-        let tilesHorizontalEdges = getTilesOnTheHorizontalEdges(playerState);
-        let collision = false;
-        if (playerState.velY > 0) {
-            // moving downwards
-            for (let tileOnBottomEdge of tilesHorizontalEdges.bottomEdge) {
-                if (tileOnBottomEdge.isWall) {
-                    // collision occurred
-                    playerState.y = tileOnBottomEdge.y - getHeightOfPlayerPixels();
-                    playerState.velY = 0;
-                    playerState.jumping = false;
-                    collision = true;
-                    break;
-                }
-            }
-            if (!collision) playerState.jumping = true;
-        } else if (playerState.velY < 0) {
-            // moving upwards
-            for (let tileOnTopEdge of tilesHorizontalEdges.topEdge) {
-                if (tileOnTopEdge.isWall) {
-                    // collision occurred
-                    playerState.y = tileOnTopEdge.y + tileMapConfig.TILE;
-                    playerState.velY = 0;
-                    break;
-                }
+    let tilesHorizontalEdges = getTilesOnTheHorizontalEdges(playerState);
+    let collision = false;
+    if (playerState.velY > 0) {
+        // moving downwards
+        for (let tileOnBottomEdge of tilesHorizontalEdges.bottomEdge) {
+            if (tileOnBottomEdge.isWall) {
+                // collision occurred
+                playerState.y = tileOnBottomEdge.y - getHeightOfPlayerPixels();
+                playerState.velY = 0;
+                playerState.jumping = false;
+                collision = true;
+                break;
             }
         }
-    
-    // surroundingWalls = getSurroundingTiles(playerState);
-    // collision_occurred = false;
-    // for (let wall of surroundingWalls) {
-    //     x_overlaps = (playerState.x < wall.x + wall.width) && (playerState.x + getWidthOfPlayerPixels() > wall.x)
-    //     y_overlaps = (playerState.y < wall.y + wall.height) && (playerState.y + getHeightOfPlayerPixels() > wall.y)
-    //     collision_occurred = x_overlaps && y_overlaps
-
-    //     if (collision_occurred) {
-    //         playerState.y = old_y;
-    //         playerState.velY = 0;
-    //         break;
-    //     }
-    // }
-
-    // // check if player is standing on floor
-    // let tilesUnderPlayer = getTilesUnderPlayer(playerState);
-    // let collidingWithFloor = false;
-    // if (collision_occurred) {
-    //     tilesUnderPlayer.forEach((tile) => {
-    //         if (tile.isWall) playerState.jumping = false;
-    //     })
-    // } else {
-    //     playerState.jumping = true;
-    // }
+        if (!collision) playerState.jumping = true;
+    } else if (playerState.velY < 0) {
+        // moving upwards
+        for (let tileOnTopEdge of tilesHorizontalEdges.topEdge) {
+            if (tileOnTopEdge.isWall) {
+                // collision occurred
+                playerState.y = tileOnTopEdge.y + tileMapConfig.TILE;
+                playerState.velY = 0;
+                break;
+            }
+        }
+    }
 
     playerState.velX = bound(playerState.velX + (dt * playerState.accelerationX), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
     playerState.velY = bound(playerState.velY + (dt * playerState.accelerationY), -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
@@ -169,15 +127,12 @@ function getTilesOnTheVerticalEdges(playerState) {
     
     let vertical_tile_indexes = new Set();
     let tileDistVert = TOP_EDGE_Y;
+
     while (tileDistVert < BOTTOM_EDGE_Y) {
         vertical_tile_indexes.add(tileUtils.p2t(tileDistVert));
         
-        if (tileDistVert + tileMapConfig.TILE >= BOTTOM_EDGE_Y) {
-            if (BOTTOM_EDGE_Y % tileMapConfig.TILE === 0) {
-                vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y - 1));
-            } else {
-                vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y));
-            }
+        if (tileDistVert + tileMapConfig.TILE > BOTTOM_EDGE_Y) {
+            vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y - 1));
             break;
         }
 
@@ -188,6 +143,7 @@ function getTilesOnTheVerticalEdges(playerState) {
         leftEdge: [],
         rightEdge: []
     }
+    
     for (let vertIndex of vertical_tile_indexes) {
         tilesVerticalEdges.leftEdge.push({
             x: tileUtils.t2p(LEFT_EDGE_TILE_INDEX),
@@ -223,7 +179,7 @@ function getTilesOnTheHorizontalEdges(playerState) {
         horizontal_tile_indexes.add(tileUtils.p2t(tileDistHorizontal));
         
         if (tileDistHorizontal + tileMapConfig.TILE > RIGHT_EDGE_X) {
-            horizontal_tile_indexes.add(tileUtils.p2t(RIGHT_EDGE_X));
+            horizontal_tile_indexes.add(tileUtils.p2t(RIGHT_EDGE_X - 1));
             break;
         }
 
