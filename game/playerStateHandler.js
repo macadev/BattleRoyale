@@ -143,6 +143,11 @@ function getTilesOnTheVerticalEdges(playerState) {
         leftEdge: [],
         rightEdge: []
     }
+
+    if (RIGHT_EDGE_X % tileMapConfig.TILE === 0) {
+        RIGHT_EDGE_X = RIGHT_EDGE_X - 1;
+        RIGHT_EDGE_TILE_INDEX = tileUtils.p2t(RIGHT_EDGE_X);
+    }
     
     for (let vertIndex of vertical_tile_indexes) {
         tilesVerticalEdges.leftEdge.push({
@@ -190,6 +195,12 @@ function getTilesOnTheHorizontalEdges(playerState) {
         topEdge: [],
         bottomEdge: []
     }
+
+    if (BOTTOM_EDGE_Y % tileMapConfig.TILE === 0) {
+        BOTTOM_EDGE_Y = BOTTOM_EDGE_Y - 1;
+        BOTTOM_EDGE_TILE_INDEX = tileUtils.p2t(BOTTOM_EDGE_Y);
+    }
+
     for (let horIndex of horizontal_tile_indexes) {
         tilesHorizontalEdges.topEdge.push({
             x: tileUtils.t2p(horIndex),
