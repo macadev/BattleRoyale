@@ -112,10 +112,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         if (delta <= INTERVAL) return;
 
         let loopInputs = {
-            up: keys[38],
-            down: keys[40],
-            right: keys[39],
-            left: keys[37],
+            up: keys[87] || keys[32],
+            down: keys[83],
+            right: keys[68],
+            left: keys[65],
             sequenceNumber: inputSeqNumber
         }
 
@@ -159,14 +159,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     document.body.addEventListener("keydown", function (e) {
         let keyCode = e.keyCode;
-        if (keyCode === 38 || keyCode === 40 || keyCode === 39 || keyCode === 37) {
+        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32) {
             e.preventDefault();
             keys[keyCode] = true;    
         }
     });
     document.body.addEventListener("keyup", function (e) {
         let keyCode = e.keyCode;
-        if (keyCode === 38 || keyCode === 40 || keyCode === 39 || keyCode === 37) {
+        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32) {
             e.preventDefault();
             keys[keyCode] = false;    
         }
