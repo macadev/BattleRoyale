@@ -1,5 +1,5 @@
 const config = {
-    MAP: { tw: 25, th: 20 },
+    MAP: { tw: 48, th: 27 },
     TILE: 32,
     EDGE_BUFFER: 5 // small distance to pad edges
 }

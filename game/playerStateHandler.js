@@ -3,12 +3,12 @@ const tileUtils = require('./tileUtils')
 const getHeightOfPlayerPixels = require('./playerUtils').getHeightOfPlayerPixels;
 const getWidthOfPlayerPixels = require('./playerUtils').getWidthOfPlayerPixels;
 
-const GRAVITY               = 9.8 * 22 // default (exagerated) gravity
-const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 15      // default max horizontal speed (15 tiles per second)
+const GRAVITY               = 9.8 * 100 // default (exagerated) gravity
+const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 12      // default max horizontal speed (15 tiles per second)
 const MAX_VERTICAL_SPEED    = tileMapConfig.METER * 60      // default max vertical speed   (60 tiles per second)
 const ACCEL                 = MAX_HORIZONTAL_SPEED * 2     
 const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 second to stop from maxdx (horizontal friction)
-const IMPULSE               = 10000    // default player jump impulse
+const IMPULSE               = 21000    // default player jump impulse
 
 function processInputs(clientInputs, playerState, dt) {
     let wasleft    = playerState.velX  < 0;
