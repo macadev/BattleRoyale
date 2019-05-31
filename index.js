@@ -61,10 +61,12 @@ setInterval(() => {
     io.emit('server-update', gameState)
 }, serverConfig.TIMESTEP)
 
-app.use(express.static('public', {}))
+app.set('views', __dirname + '/public');
+app.set('view engine', 'pug');
+app.use(express.static(__dirname + '/public'))
 
 app.get('/', function(req, res) {
-    res.render('index')
+    res.render('./index')
 })
 
 // Handle 404
@@ -77,4 +79,5 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler())
 }
 
-server.listen(4000, '0.0.0.0')
+// server.listen(5000, '0.0.0.0')
+module.exports = app 
