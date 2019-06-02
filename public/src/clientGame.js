@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     var delta;
 
     var gameState = {
-        playerStates: {}
+        playerStates: {} // contiene mapping de socketId a objeto
     };
     var clientInputs = [];
     var inputSeqNumber = 0;
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         serverReconciliation(clientInputs, gameState, localPlayerState)
-        playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY)
+        playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
         interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);

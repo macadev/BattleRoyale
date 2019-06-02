@@ -10,7 +10,7 @@ const ACCEL                 = MAX_HORIZONTAL_SPEED * 2
 const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 second to stop from maxdx (horizontal friction)
 const IMPULSE               = 21000    // default player jump impulse
 
-function processInputs(clientInputs, playerState, dt) {
+function processInputs(clientInputs, playerState, dt, gameState, playerSocketId) {
     let wasleft    = playerState.velX  < 0;
     let wasright   = playerState.velX  > 0;
     
@@ -35,8 +35,34 @@ function processInputs(clientInputs, playerState, dt) {
     }
 
     playerState.x  = playerState.x  + (dt * playerState.velX);
-    
+
+    // Colision entre jugadores en el X axis
+    for (let enemyPlayerSockeId in gameState.playerStates) {
+        // No evaluar colision entre el jugador y si mismo
+        if (enemyPlayerSockeId === playerSocketId) {
+            continue;
+        }
+
+        let enemyPlayerState = gameState.playerStates[enemyPlayerSockeId]
+
+        if (playerState.x < enemyPlayerState.x + getWidthOfPlayerPixels() &&
+            playerState.x + getWidthOfPlayerPixels() > enemyPlayerState.x &&
+            playerState.y < enemyPlayerState.y + getHeightOfPlayerPixels() &&
+            playerState.y + getHeightOfPlayerPixels() > enemyPlayerState.y) {
+                if (playerState.velX > 0) {
+                    // derecha
+                    playerState.x = enemyPlayerState.x - getWidthOfPlayerPixels()
+                    playerState.velX = 0
+                } else if (playerState.velX < 0) {
+                    // izquierda
+                    playerState.x = enemyPlayerState.x + getWidthOfPlayerPixels()
+                    playerState.velX = 0
+                }
+        }
+    }
+
     let tilesVerticalEdges = getTilesOnTheVerticalEdges(playerState);
+
     if (playerState.velX > 0) {
         // moving right
         for (let tileOnRightEdge of tilesVerticalEdges.rightEdge) {
@@ -60,6 +86,34 @@ function processInputs(clientInputs, playerState, dt) {
     }
 
     playerState.y  = playerState.y  + (dt * playerState.velY);
+
+    // Colision entre jugadores en el Y axis
+    for (let enemyPlayerSockeId in gameState.playerStates) {
+        // No evaluar colision entre el jugador y si mismo
+        if (enemyPlayerSockeId === playerSocketId) {
+            continue;
+        }
+
+        let enemyPlayerState = gameState.playerStates[enemyPlayerSockeId]
+
+        if (playerState.x < enemyPlayerState.x + getWidthOfPlayerPixels() &&
+            playerState.x + getWidthOfPlayerPixels() > enemyPlayerState.x &&
+            playerState.y < enemyPlayerState.y + getHeightOfPlayerPixels() &&
+            playerState.y + getHeightOfPlayerPixels() > enemyPlayerState.y) {
+                if (playerState.velY > 0) {
+                    // abajo
+                    playerState.accelerationY = playerState.accelerationY - IMPULSE;
+                    playerState.velY = 0
+                    playerState.jumping = true;
+                    playerState.y = enemyPlayerState.y - getHeightOfPlayerPixels()
+                    playerState.jumping = false
+                } else if (playerState.velY < 0) {
+                    // arriba
+                    playerState.y = enemyPlayerState.y + getHeightOfPlayerPixels()
+                    playerState.velY = 0
+                }
+        }
+    }
     
     let tilesHorizontalEdges = getTilesOnTheHorizontalEdges(playerState);
     let collision = false;
@@ -128,9 +182,11 @@ function getTilesOnTheVerticalEdges(playerState) {
     let vertical_tile_indexes = new Set();
     let tileDistVert = TOP_EDGE_Y;
 
+    // Recolectar indices de los "tiles" que el jugador ocupa
     while (tileDistVert < BOTTOM_EDGE_Y) {
         vertical_tile_indexes.add(tileUtils.p2t(tileDistVert));
         
+        // Caso especial, no recuerdo para que
         if (tileDistVert + tileMapConfig.TILE > BOTTOM_EDGE_Y) {
             vertical_tile_indexes.add(tileUtils.p2t(BOTTOM_EDGE_Y - 1));
             break;
@@ -144,11 +200,14 @@ function getTilesOnTheVerticalEdges(playerState) {
         rightEdge: []
     }
 
+    // En caso de que el jugador este exactamente en el boundary de un tile,
+    // moverlo un poco a la izquierda
     if (RIGHT_EDGE_X % tileMapConfig.TILE === 0) {
         RIGHT_EDGE_X = RIGHT_EDGE_X - 1;
         RIGHT_EDGE_TILE_INDEX = tileUtils.p2t(RIGHT_EDGE_X);
     }
     
+    // Agregar a tilesVerticalEdges todos los tiles que el jugador ocupa
     for (let vertIndex of vertical_tile_indexes) {
         tilesVerticalEdges.leftEdge.push({
             x: tileUtils.t2p(LEFT_EDGE_TILE_INDEX),

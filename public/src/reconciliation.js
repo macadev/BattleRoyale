@@ -21,7 +21,7 @@ export function serverReconciliation(clientInputs, gameState, localPlayerState) 
     // Apply un-acked inputs on position indicated by server
     var serverPlayerState = Object.assign({}, gameState.playerStates[socket.id])
     for (let input of clientInputs) {
-        playerStateHandler.processInputs(input, serverPlayerState, FREQUENCY)
+        playerStateHandler.processInputs(input, serverPlayerState, FREQUENCY, gameState, socket.id)
     }
 
     if (

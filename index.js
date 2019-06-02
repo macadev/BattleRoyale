@@ -54,7 +54,7 @@ setInterval(() => {
         if (!gameState.playerStates[frameInput.socketId]) return
         
         // Update player position on server. Acknowledge last input.
-        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY)
+        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
     frameInputs = []
@@ -79,4 +79,4 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler())
 }
 
-server.listen(4000, '0.0.0.0')
+server.listen(5000, '0.0.0.0')
