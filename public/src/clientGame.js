@@ -164,6 +164,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     window.addEventListener('resize', resize, false);
 
+    window.onblur = function() {
+        keys[87] = false
+        keys[32] = false
+        keys[83] = false
+        keys[68] = false
+        keys[65] = false
+    }
+
     document.body.addEventListener("keydown", function (e) {
         let keyCode = e.keyCode;
         if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32) {

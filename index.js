@@ -49,7 +49,9 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
+    let processedPlayerSocketIds = new Set()
     frameInputs.forEach((frameInput) => {
+        processedPlayerSocketIds.add(frameInput.socketId)
         // Inputs were queued and player disconnected. Can't process them.
         if (!gameState.playerStates[frameInput.socketId]) return
         
@@ -57,6 +59,12 @@ setInterval(() => {
         playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
+
+    for (let playerSocketId in gameState.playerStates) {
+        if (processedPlayerSocketIds.has(playerSocketId)) continue;
+        playerStateHandler.processInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
+    }
+
     frameInputs = []
     io.emit('server-update', gameState)
 }, serverConfig.TIMESTEP)
