@@ -101,6 +101,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 }
             )
         }
+
+        for (let playerSocketId in localGameState.playerStates) {
+            if (!updatedGameState.playerStates[playerSocketId]) {
+                delete localGameState.playerStates[playerSocketId]
+            }
+        }
+
     }
     
     function gameLoop() {
