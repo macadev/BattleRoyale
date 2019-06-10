@@ -1,5 +1,5 @@
 import { randomColor } from './colour'
-import { drawPlayer, drawMyServerPosition, drawGameState, drawTileGrid, drawTiles } from './draw'
+import { drawPlayer, drawMyServerPosition, drawGameState, drawTileGrid, drawTiles, drawPunch } from './draw'
 import { serverReconciliation } from './reconciliation'
 import { interpolateEntities } from './interpolation'
 import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
     };
     var clientInputs = [];
     var inputSeqNumber = 0;
+
+    var objectsToAnimate = []
 
     socket = io.connect();
     socket.on('ack-join', function (updatedGameState) {
@@ -136,6 +138,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
         drawGameState(gameState, ctx);
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
+
+        let animationResult;
+        let animationsNotCompleted = []
+        for (let objectToAnimate of objectsToAnimate) {
+            animationResult = objectToAnimate.update(delta, localPlayerState, ctx);
+            if (!animationResult.canDelete) {
+                animationsNotCompleted.push(objectToAnimate)
+            }
+        }
+
+        objectsToAnimate = animationsNotCompleted;
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;
@@ -178,6 +191,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
             e.preventDefault();
             keys[keyCode] = true;    
         }
+        if (keyCode === 78) {
+            e.preventDefault();
+            objectsToAnimate.push(new PunchAnimation())
+        }
     });
     document.body.addEventListener("keyup", function (e) {
         let keyCode = e.keyCode;
@@ -187,3 +204,27 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
     });
 });
+
+function PunchAnimation() {
+    var animationSpeed = 15; // 5 fps
+    var animationUpdateTime = 1.0 / 15;
+    var timeSinceLastFrameSwap = 0;
+    // var punchDrawLocation = [3, 6, 9, 12, 15];
+    var punchDrawLocation = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    var animFrame = 0
+
+    this.update = function(deltaTime, localPlayerState, ctx) {
+        timeSinceLastFrameSwap += deltaTime;
+        if (timeSinceLastFrameSwap > animationUpdateTime) {
+            // draw appropriate frame in chain of sprites
+            drawPunch(localPlayerState, punchDrawLocation[animFrame], ctx);
+            animFrame++;
+            timeSinceLastFrameSwap = 0.0;
+
+            if (animFrame == 14) {
+                return { canDelete: true };
+            }
+        }
+        return { canDelete: false };
+    }
+}

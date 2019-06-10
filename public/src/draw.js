@@ -9,6 +9,11 @@ export function drawPlayer(playerState, ctx) {
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);
 }
 
+export function drawPunch(playerState, punchDistanceX, ctx) {
+    ctx.fillStyle = "green";
+    ctx.fillRect(playerState.x + getWidthOfPlayerPixels() + punchDistanceX, playerState.y + 20, 20, 15);
+}
+
 export function drawMyServerPosition(gameState, ctx) {
     if (!gameState || !gameState.playerStates) return
     let myServerPosition = gameState.playerStates[socket.id];
