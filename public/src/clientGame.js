@@ -209,15 +209,14 @@ function PunchAnimation() {
     var animationSpeed = 15; // 5 fps
     var animationUpdateTime = 1.0 / 15;
     var timeSinceLastFrameSwap = 0;
-    // var punchDrawLocation = [3, 6, 9, 12, 15];
-    var punchDrawLocation = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+    var punchSizePixels = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
     var animFrame = 0
 
     this.update = function(deltaTime, localPlayerState, ctx) {
         timeSinceLastFrameSwap += deltaTime;
         if (timeSinceLastFrameSwap > animationUpdateTime) {
             // draw appropriate frame in chain of sprites
-            drawPunch(localPlayerState, punchDrawLocation[animFrame], ctx);
+            drawPunch(localPlayerState, punchSizePixels[animFrame], ctx);
             animFrame++;
             timeSinceLastFrameSwap = 0.0;
 

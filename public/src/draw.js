@@ -9,9 +9,15 @@ export function drawPlayer(playerState, ctx) {
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);
 }
 
-export function drawPunch(playerState, punchDistanceX, ctx) {
+export function drawPunch(playerState, punchSizePixels, ctx) {
     ctx.fillStyle = "green";
-    ctx.fillRect(playerState.x + getWidthOfPlayerPixels() + punchDistanceX, playerState.y + 20, 20, 15);
+    let punchXCoord;
+    if (playerState.velX >= 0) {
+        punchXCoord = playerState.x + getWidthOfPlayerPixels();
+    } else {
+        punchXCoord = playerState.x - punchSizePixels - 5;
+    }
+    ctx.fillRect(punchXCoord, playerState.y + 20, punchSizePixels + 5, 20);
 }
 
 export function drawMyServerPosition(gameState, ctx) {
