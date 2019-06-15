@@ -27,7 +27,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         jumping: true,
         accelerationX: 0,
         accelerationY: 0,
-        colour: randomColor(120)
+        colour: randomColor(120),
+        punchState: undefined
     }
 
     var now;
@@ -39,8 +40,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     };
     var clientInputs = [];
     var inputSeqNumber = 0;
-
-    var objectsToAnimate = []
 
     socket = io.connect();
     socket.on('ack-join', function (updatedGameState) {
@@ -140,16 +139,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
 
-        let animationResult;
-        let animationsNotCompleted = []
-        for (let objectToAnimate of objectsToAnimate) {
-            animationResult = objectToAnimate.update(delta, localPlayerState, ctx);
-            if (!animationResult.canDelete) {
-                animationsNotCompleted.push(objectToAnimate)
+        if (localPlayerState.punchState !== undefined) {
+            let animationResult = localPlayerState.punchState.update(delta);
+            drawPunch(localPlayerState, animationResult.punchSize, ctx);
+            if (animationResult.punchEnded) {
+                localPlayerState.punchState = undefined;
             }
         }
-
-        objectsToAnimate = animationsNotCompleted;
         
         clientInputs.push(loopInputs);
         inputSeqNumber++;
@@ -195,10 +191,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         if (keyCode === 78) {
             e.preventDefault();
             keys[keyCode] = true;
-            // Only allow one punch animation at a given time
-            if (objectsToAnimate.length === 0) {
+            
+            if (localPlayerState.punchState === undefined) {
                 console.log("No active punch")
-                objectsToAnimate.push(new PunchAnimation())
+                localPlayerState.punchState = new PunchAnimation()
             }
         }
     });
@@ -216,20 +212,23 @@ function PunchAnimation() {
     var animationUpdateTime = 1.0 / 15;
     var timeSinceLastFrameSwap = 0;
     var punchSizePixels = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
+    
     var animFrame = 0
+    var punchSize = punchSizePixels[0]
+    var punchEnded = false
 
-    this.update = function(deltaTime, localPlayerState, ctx) {
+    this.update = function(deltaTime) {
         timeSinceLastFrameSwap += deltaTime;
         if (timeSinceLastFrameSwap > animationUpdateTime) {
-            // draw appropriate frame in chain of sprites
-            drawPunch(localPlayerState, punchSizePixels[animFrame], ctx);
             animFrame++;
             timeSinceLastFrameSwap = 0.0;
+            punchSize = punchSizePixels[animFrame];
 
-            if (animFrame == 14) {
-                return { canDelete: true };
-            }
+            if (animFrame === 14) punchEnded = true
         }
-        return { canDelete: false };
+        return {
+            punchSize,
+            punchEnded
+        };
     }
 }
