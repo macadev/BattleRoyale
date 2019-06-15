@@ -125,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             down: keys[83],
             right: keys[68],
             left: keys[65],
+            punch: keys[78],
             sequenceNumber: inputSeqNumber
         }
 
@@ -193,12 +194,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
         if (keyCode === 78) {
             e.preventDefault();
-            objectsToAnimate.push(new PunchAnimation())
+            keys[keyCode] = true;
+            // Only allow one punch animation at a given time
+            if (objectsToAnimate.length === 0) {
+                console.log("No active punch")
+                objectsToAnimate.push(new PunchAnimation())
+            }
         }
     });
     document.body.addEventListener("keyup", function (e) {
         let keyCode = e.keyCode;
-        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32) {
+        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32 || keyCode === 78) {
             e.preventDefault();
             keys[keyCode] = false;    
         }
@@ -206,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function PunchAnimation() {
-    var animationSpeed = 15; // 5 fps
+    var animationSpeed = 15; // 15 fps
     var animationUpdateTime = 1.0 / 15;
     var timeSinceLastFrameSwap = 0;
     var punchSizePixels = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];

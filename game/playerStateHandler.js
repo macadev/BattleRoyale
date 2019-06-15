@@ -34,7 +34,7 @@ function processInputs(clientInputs, playerState, dt, gameState, playerSocketId)
         playerState.accelerationX = playerState.accelerationX + FRICTION;
     }
 
-    playerState.x  = playerState.x  + (dt * playerState.velX);
+    playerState.x  = playerState.x + (dt * playerState.velX);
 
     // Colision entre jugadores en el X axis
     for (let enemyPlayerSockeId in gameState.playerStates) {
