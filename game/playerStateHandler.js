@@ -11,6 +11,17 @@ const FRICTION              = MAX_HORIZONTAL_SPEED * 6     // default take 1/6 s
 const IMPULSE               = 21000    // default player jump impulse
 
 function processInputs(clientInputs, playerState, dt, gameState, playerSocketId) {
+    processInputs_handlePlayerCollisions_handleTileCollisions(clientInputs, playerState, dt, gameState, playerSocketId)
+    
+    handleCollisionsWithTileGridBoundaries(playerState)
+    
+    if (playerState.punchState !== undefined) {
+        playerState.punchState.update(dt)
+    }
+}
+
+// Holy moly this needs refactoring
+function processInputs_handlePlayerCollisions_handleTileCollisions(clientInputs, playerState, dt, gameState, playerSocketId) {
     let wasleft    = playerState.velX  < 0;
     let wasright   = playerState.velX  > 0;
     
@@ -148,8 +159,6 @@ function processInputs(clientInputs, playerState, dt, gameState, playerSocketId)
     if ((wasleft  && (playerState.velX > 0)) || (wasright && (playerState.velX < 0))) {
         playerState.velX = 0; // clamp at zero to prevent friction from making us jiggle side to side
     }
-
-    handleCollisionsWithTileGridBoundaries(playerState);
 }
 
 function handleCollisionsWithTileGridBoundaries(playerState) {

@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
 
         serverReconciliation(clientInputs, gameState, localPlayerState)
+        // Why in the world am I passing fixed FREQUENCY instead of dt?
         playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
         interpolateEntities(gameState);
         
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // drawMyServerPosition(gameState, ctx);
 
         if (localPlayerState.punchState !== undefined) {
-            let animationResult = localPlayerState.punchState.update(delta);
+            let animationResult = localPlayerState.punchState.getCurrentState();
             drawPunch(localPlayerState, animationResult.punchSize, ctx);
             if (animationResult.punchEnded) {
                 localPlayerState.punchState = undefined;
@@ -208,8 +209,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function PunchAnimation() {
-    var animationSpeed = 15; // 15 fps
-    var animationUpdateTime = 1.0 / 15;
+    var animationSpeed = 60; // 15 fps
+    var animationUpdateTime = 1.0 / 60;
     var timeSinceLastFrameSwap = 0;
     var punchSizePixels = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
     
@@ -226,6 +227,13 @@ function PunchAnimation() {
 
             if (animFrame === 14) punchEnded = true
         }
+        return {
+            punchSize,
+            punchEnded
+        };
+    }
+
+    this.getCurrentState = function() {
         return {
             punchSize,
             punchEnded
