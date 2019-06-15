@@ -6,6 +6,7 @@ import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
 import io from 'socket.io-client'
 import playerStateHandler from '../../game/playerStateHandler'
 import tileMapConfig from '../../game/tileMapConfig'
+import { Punch } from '../../game/punch';
 
 export var socket
 
@@ -195,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             
             if (localPlayerState.punchState === undefined) {
                 console.log("No active punch")
-                localPlayerState.punchState = new PunchAnimation()
+                localPlayerState.punchState = new Punch()
             }
         }
     });
@@ -208,35 +209,3 @@ document.addEventListener("DOMContentLoaded", function(event) {
     });
 });
 
-function PunchAnimation() {
-    var animationSpeed = 60; // 15 fps
-    var animationUpdateTime = 1.0 / 60;
-    var timeSinceLastFrameSwap = 0;
-    var punchSizePixels = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
-    
-    var animFrame = 0
-    var punchSize = punchSizePixels[0]
-    var punchEnded = false
-
-    this.update = function(deltaTime) {
-        timeSinceLastFrameSwap += deltaTime;
-        if (timeSinceLastFrameSwap > animationUpdateTime) {
-            animFrame++;
-            timeSinceLastFrameSwap = 0.0;
-            punchSize = punchSizePixels[animFrame];
-
-            if (animFrame === 14) punchEnded = true
-        }
-        return {
-            punchSize,
-            punchEnded
-        };
-    }
-
-    this.getCurrentState = function() {
-        return {
-            punchSize,
-            punchEnded
-        };
-    }
-}
