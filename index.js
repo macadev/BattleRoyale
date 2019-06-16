@@ -33,6 +33,7 @@ io.on('connection', (socket) => {
         jumping: true,
         lastSeqNumber: -1,
         punchInProgress: false,
+        punchSize: undefined,
         punchState: new Punch()
     }
     
@@ -55,13 +56,17 @@ setInterval(() => {
     let processedPlayerSocketIds = new Set()
     frameInputs.forEach((frameInput) => {
         processedPlayerSocketIds.add(frameInput.socketId)
+
+        let playerBeingProcessed = gameState.playerStates[frameInput.socketId]
         // Inputs were queued and player disconnected. Can't process them.
-        if (!gameState.playerStates[frameInput.socketId]) return
+        if (!playerBeingProcessed) return
         
         // Update player position on server. Acknowledge last input.
-        playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
-        playerStateHandler.processAttackInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
-        gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
+        playerStateHandler.processInputs(frameInput.inputs, playerBeingProcessed, clientConfig.FREQUENCY, gameState, frameInput.socketId)
+        playerStateHandler.processAttackInputs(frameInput.inputs, playerBeingProcessed, clientConfig.FREQUENCY, gameState, frameInput.socketId)
+        playerBeingProcessed.lastSeqNumber = frameInput.inputs.sequenceNumber
+
+        playerBeingProcessed.punchSize = playerBeingProcessed.punchState.getCurrentState().punchSize
     })
 
     // Continue simulation for players that didn't send inputs

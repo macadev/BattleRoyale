@@ -25,7 +25,6 @@ function processAttackInputs(clientInputs, playerState, dt, gameState, playerSoc
 
     if (playerState.punchInProgress) {
         let updatedPunchState = playerState.punchState.update(dt)
-        console.log(updatedPunchState)
         playerState.punchInProgress = updatedPunchState.punchInProgress
     }
 }

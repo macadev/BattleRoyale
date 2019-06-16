@@ -65,20 +65,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
             var entityFromServer = updatedGameState.playerStates[playerSocketId]
             
             if (localGameState.playerStates[playerSocketId]) {
+                let player = localGameState.playerStates[playerSocketId]
                 // if entitiy already exists, update it with the new information.
                 
                 // TODO: Once we start interpolating, we won't be able to hardcode updates this way. Remove.
-                localGameState.playerStates[playerSocketId].x = entityFromServer.x
-                localGameState.playerStates[playerSocketId].y = entityFromServer.y
+                player.x = entityFromServer.x
+                player.y = entityFromServer.y
                 
                 // TODO: Velocity is fixed for now. Consider removing.
-                localGameState.playerStates[playerSocketId].velX = entityFromServer.velX
-                localGameState.playerStates[playerSocketId].velY = entityFromServer.velY
+                player.velX = entityFromServer.velX
+                player.velY = entityFromServer.velY
                 
-                localGameState.playerStates[playerSocketId].punchInProgress = entityFromServer.punchInProgress
+                player.punchInProgress = entityFromServer.punchInProgress
+                player.punchSize = entityFromServer.punchSize
 
                 // TODO: Sequence number is only useful for reconciliation of local player. Remove this.
-                localGameState.playerStates[playerSocketId].lastSeqNumber = entityFromServer.lastSeqNumber
+                player.lastSeqNumber = entityFromServer.lastSeqNumber
             }
             
             /*****************************************************************/

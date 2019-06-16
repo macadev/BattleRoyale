@@ -33,6 +33,9 @@ export function drawGameState(gameState, ctx) {
         let playerData = gameState.playerStates[playerSocketId];
         ctx.fillStyle = "blue";
         _fillPlayerRectangle(playerData.x, playerData.y, ctx);
+        if (playerData.punchInProgress) {
+            drawPunch(playerData, playerData.punchSize, ctx)
+        }
     }
 }
 
