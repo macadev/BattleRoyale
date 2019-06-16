@@ -2,7 +2,6 @@ const tileMapConfig = require('./tileMapConfig')
 const tileUtils = require('./tileUtils')
 const getHeightOfPlayerPixels = require('./playerUtils').getHeightOfPlayerPixels;
 const getWidthOfPlayerPixels = require('./playerUtils').getWidthOfPlayerPixels;
-const Punch = require('./punch')
 
 const GRAVITY               = 9.8 * 100 // default (exagerated) gravity
 const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 12      // default max horizontal speed (15 tiles per second)
@@ -23,9 +22,18 @@ function processAttackInputs(clientInputs, playerState, dt, gameState, playerSoc
         playerState.punchState.resetPunch()
     }
 
-    if (playerState.punchInProgress) {
-        let updatedPunchState = playerState.punchState.update(dt)
-        playerState.punchInProgress = updatedPunchState.punchInProgress
+    if (!playerState.punchInProgress) return;
+
+    let updatedPunchState = playerState.punchState.update(dt)
+    playerState.punchInProgress = updatedPunchState.punchInProgress
+
+    // Colision entre jugadores en el X axis
+    for (let enemyPlayerSockeId in gameState.playerStates) {
+        // No evaluar colision entre el jugador y si mismo
+        if (enemyPlayerSockeId === playerSocketId) {
+            continue;
+        }
+
     }
 }
 

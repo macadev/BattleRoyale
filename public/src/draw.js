@@ -3,21 +3,16 @@ import { MAP, TILE, HEIGHT, WIDTH } from '../../game/tileMapConfig'
 import { tcell, p2t } from '../../game/tileUtils'
 import { getSurroundingTiles, getTilesUnderPlayer, getTilesOnTheHorizontalEdges, getTilesOnTheVerticalEdges } from '../../game/playerStateHandler'
 import { getHeightOfPlayerPixels, getWidthOfPlayerPixels } from '../../game/playerUtils'
+import { getDataForDrawingPunch } from '../../game/punch'
 
 export function drawPlayer(playerState, ctx) {
     ctx.fillStyle = "purple";
     _fillPlayerRectangle(playerState.x, playerState.y, ctx);
 }
 
-export function drawPunch(playerState, punchSizePixels, ctx) {
+export function drawPunch(punchDrawData, ctx) {
     ctx.fillStyle = "green";
-    let punchXCoord;
-    if (playerState.velX >= 0) {
-        punchXCoord = playerState.x + getWidthOfPlayerPixels();
-    } else {
-        punchXCoord = playerState.x - punchSizePixels - 5;
-    }
-    ctx.fillRect(punchXCoord, playerState.y + 20, punchSizePixels + 5, 20);
+    ctx.fillRect(punchDrawData.x, punchDrawData.y, punchDrawData.width, punchDrawData.height);
 }
 
 export function drawMyServerPosition(gameState, ctx) {
@@ -34,7 +29,8 @@ export function drawGameState(gameState, ctx) {
         ctx.fillStyle = "blue";
         _fillPlayerRectangle(playerData.x, playerData.y, ctx);
         if (playerData.punchInProgress) {
-            drawPunch(playerData, playerData.punchSize, ctx)
+            let dataToDrawPunch = getDataForDrawingPunch(playerData)
+            drawPunch(dataToDrawPunch, ctx)
         }
     }
 }

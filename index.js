@@ -3,7 +3,7 @@ const errorhandler = require('errorhandler')
 const playerStateHandler = require('./game/playerStateHandler')
 const serverConfig = require('./game/serverConfig')
 const clientConfig = require('./game/clientConfig')
-const Punch = require('./game/punch')
+const { Punch } = require('./game/punch')
 
 var app = express()
 var server = require('http').Server(app)

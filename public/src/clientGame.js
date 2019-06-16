@@ -6,7 +6,7 @@ import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
 import io from 'socket.io-client'
 import playerStateHandler from '../../game/playerStateHandler'
 import tileMapConfig from '../../game/tileMapConfig'
-import Punch from '../../game/punch'
+import { Punch, getDataForDrawingPunch } from '../../game/punch'
 
 export var socket
 
@@ -149,8 +149,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // drawMyServerPosition(gameState, ctx);
 
         if (localPlayerState.punchInProgress) {
-            let animationResult = localPlayerState.punchState.getCurrentState();
-            drawPunch(localPlayerState, animationResult.punchSize, ctx);
+            let punchDrawData = getDataForDrawingPunch(localPlayerState);
+            drawPunch(punchDrawData, ctx);
         }
         
         clientInputs.push(loopInputs);
