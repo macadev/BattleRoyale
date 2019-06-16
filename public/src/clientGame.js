@@ -6,7 +6,7 @@ import { FPS, FREQUENCY, INTERVAL } from '../../game/clientConfig'
 import io from 'socket.io-client'
 import playerStateHandler from '../../game/playerStateHandler'
 import tileMapConfig from '../../game/tileMapConfig'
-import { Punch } from '../../game/punch';
+import Punch from '../../game/punch'
 
 export var socket
 
@@ -29,7 +29,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         accelerationX: 0,
         accelerationY: 0,
         colour: randomColor(120),
-        punchState: undefined
+        punchState: new Punch(),
+        punchInProgress: false
     }
 
     var now;
@@ -73,6 +74,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 // TODO: Velocity is fixed for now. Consider removing.
                 localGameState.playerStates[playerSocketId].velX = entityFromServer.velX
                 localGameState.playerStates[playerSocketId].velY = entityFromServer.velY
+                
+                localGameState.playerStates[playerSocketId].punchInProgress = entityFromServer.punchInProgress
 
                 // TODO: Sequence number is only useful for reconciliation of local player. Remove this.
                 localGameState.playerStates[playerSocketId].lastSeqNumber = entityFromServer.lastSeqNumber
@@ -84,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (!localGameState.playerStates[playerSocketId]) {
                 // if entity is new, add it to the local state
+                console.log("MACA SETTING ENTITY FROM SERVER", entityFromServer)
                 localGameState.playerStates[playerSocketId] = entityFromServer;
             }
 
@@ -132,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         serverReconciliation(clientInputs, gameState, localPlayerState)
         // Why in the world am I passing fixed FREQUENCY instead of dt?
         playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
+        playerStateHandler.processAttackInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
         interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
@@ -141,12 +146,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
 
-        if (localPlayerState.punchState !== undefined) {
+        if (localPlayerState.punchInProgress) {
             let animationResult = localPlayerState.punchState.getCurrentState();
             drawPunch(localPlayerState, animationResult.punchSize, ctx);
-            if (animationResult.punchEnded) {
-                localPlayerState.punchState = undefined;
-            }
         }
         
         clientInputs.push(loopInputs);
@@ -182,22 +184,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         keys[83] = false
         keys[68] = false
         keys[65] = false
+        keys[78] = false
     }
 
     document.body.addEventListener("keydown", function (e) {
         let keyCode = e.keyCode;
-        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32) {
+        if (keyCode === 87 || keyCode === 68 || keyCode === 83 || keyCode === 65 || keyCode === 32 || keyCode === 78) {
             e.preventDefault();
             keys[keyCode] = true;    
-        }
-        if (keyCode === 78) {
-            e.preventDefault();
-            keys[keyCode] = true;
-            
-            if (localPlayerState.punchState === undefined) {
-                console.log("No active punch")
-                localPlayerState.punchState = new Punch()
-            }
         }
     });
     document.body.addEventListener("keyup", function (e) {

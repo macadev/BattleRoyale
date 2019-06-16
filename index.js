@@ -3,6 +3,7 @@ const errorhandler = require('errorhandler')
 const playerStateHandler = require('./game/playerStateHandler')
 const serverConfig = require('./game/serverConfig')
 const clientConfig = require('./game/clientConfig')
+const Punch = require('./game/punch')
 
 var app = express()
 var server = require('http').Server(app)
@@ -30,7 +31,9 @@ io.on('connection', (socket) => {
         accelerationX: 0,
         accelerationY: 0,
         jumping: true,
-        lastSeqNumber: -1
+        lastSeqNumber: -1,
+        punchInProgress: false,
+        punchState: new Punch()
     }
     
     socket.emit('ack-join', gameState)
@@ -57,12 +60,16 @@ setInterval(() => {
         
         // Update player position on server. Acknowledge last input.
         playerStateHandler.processInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
+        playerStateHandler.processAttackInputs(frameInput.inputs, gameState.playerStates[frameInput.socketId], clientConfig.FREQUENCY, gameState, frameInput.socketId)
         gameState.playerStates[frameInput.socketId].lastSeqNumber = frameInput.inputs.sequenceNumber
     })
 
+    // Continue simulation for players that didn't send inputs
     for (let playerSocketId in gameState.playerStates) {
         if (processedPlayerSocketIds.has(playerSocketId)) continue;
         playerStateHandler.processInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
+        playerStateHandler.processAttackInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
+        
     }
 
     frameInputs = []

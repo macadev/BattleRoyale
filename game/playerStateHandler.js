@@ -2,6 +2,7 @@ const tileMapConfig = require('./tileMapConfig')
 const tileUtils = require('./tileUtils')
 const getHeightOfPlayerPixels = require('./playerUtils').getHeightOfPlayerPixels;
 const getWidthOfPlayerPixels = require('./playerUtils').getWidthOfPlayerPixels;
+const Punch = require('./punch')
 
 const GRAVITY               = 9.8 * 100 // default (exagerated) gravity
 const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 12      // default max horizontal speed (15 tiles per second)
@@ -14,9 +15,18 @@ function processInputs(clientInputs, playerState, dt, gameState, playerSocketId)
     processInputs_handlePlayerCollisions_handleTileCollisions(clientInputs, playerState, dt, gameState, playerSocketId)
     
     handleCollisionsWithTileGridBoundaries(playerState)
-    
-    if (playerState.punchState !== undefined) {
-        playerState.punchState.update(dt)
+}
+
+function processAttackInputs(clientInputs, playerState, dt, gameState, playerSocketId) {
+    if (clientInputs.punch && !playerState.punchInProgress) {
+        playerState.punchInProgress = true
+        playerState.punchState.resetPunch()
+    }
+
+    if (playerState.punchInProgress) {
+        let updatedPunchState = playerState.punchState.update(dt)
+        console.log(updatedPunchState)
+        playerState.punchInProgress = updatedPunchState.punchInProgress
     }
 }
 
@@ -384,6 +394,7 @@ function bound(x, min, max) {
 
 module.exports = {
     processInputs: processInputs,
+    processAttackInputs: processAttackInputs,
     getSurroundingTiles: getSurroundingTiles,
     getTilesUnderPlayer: getTilesUnderPlayer,
     getTilesOnTheHorizontalEdges: getTilesOnTheHorizontalEdges,
