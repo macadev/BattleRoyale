@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         colour: randomColor(120),
         punchState: new Punch(),
         punchInProgress: false,
-        punchLanded: false
+        punchLanded: false,
+        health: 5
     }
 
     var now;
@@ -80,6 +81,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 player.punchInProgress = entityFromServer.punchInProgress
                 player.punchSize = entityFromServer.punchSize
 
+                player.health = entityFromServer.health
+
                 // TODO: Sequence number is only useful for reconciliation of local player. Remove this.
                 player.lastSeqNumber = entityFromServer.lastSeqNumber
             }
@@ -90,7 +93,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             if (!localGameState.playerStates[playerSocketId]) {
                 // if entity is new, add it to the local state
-                console.log("MACA SETTING ENTITY FROM SERVER", entityFromServer)
                 localGameState.playerStates[playerSocketId] = entityFromServer;
             }
 
@@ -136,16 +138,28 @@ document.addEventListener("DOMContentLoaded", function(event) {
             sequenceNumber: inputSeqNumber
         }
 
-        serverReconciliation(clientInputs, gameState, localPlayerState)
-        // Why in the world am I passing fixed FREQUENCY instead of dt?
-        playerStateHandler.processAttackInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
-        playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
+        // Big kludge. This is how server tells us how much health we have remaining
+        if (gameState.playerStates[socket.id]) {
+            localPlayerState.health = gameState.playerStates[socket.id].health
+        }
+
+        if (localPlayerState.health > 0) {
+            serverReconciliation(clientInputs, gameState, localPlayerState)
+            // Why in the world am I passing fixed FREQUENCY instead of dt?
+            playerStateHandler.processAttackInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
+            playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
+        }
+
         interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
         drawTileGrid(ctx);
         drawTiles(ctx);
         drawGameState(gameState, ctx);
+        
+        // Don't draw player, or emit inputs to the server
+        if (localPlayerState.health <= 0) return;
+
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
 

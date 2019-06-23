@@ -56,6 +56,9 @@ function processAttackInputs(clientInputs, playerState, dt, gameState, playerSoc
                 enemyPlayerState.velY = -300
             }
 
+            // Decrease health of enemy player by 1
+            enemyPlayerState.health = enemyPlayerState.health - 1
+
             playerState.punchLanded = true
         }
     }

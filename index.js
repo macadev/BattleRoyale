@@ -35,7 +35,8 @@ io.on('connection', (socket) => {
         punchInProgress: false,
         punchSize: undefined,
         punchState: new Punch(),
-        punchLanded: false
+        punchLanded: false,
+        health: 5
     }
     
     socket.emit('ack-join', gameState)
@@ -54,6 +55,8 @@ io.on('connection', (socket) => {
 });
 
 setInterval(() => {
+    removeDeadPlayersFromGameSimulation()
+
     let processedPlayerSocketIds = new Set()
     frameInputs.forEach((frameInput) => {
         processedPlayerSocketIds.add(frameInput.socketId)
@@ -73,13 +76,22 @@ setInterval(() => {
     // Continue simulation for players that didn't send inputs
     for (let playerSocketId in gameState.playerStates) {
         if (processedPlayerSocketIds.has(playerSocketId)) continue;
-        playerStateHandler.processInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
-        playerStateHandler.processAttackInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
+        let playerBeingProcessed = gameState.playerStates[playerSocketId]
+        playerStateHandler.processInputs({}, playerBeingProcessed, clientConfig.FREQUENCY, gameState, playerSocketId)
+        playerStateHandler.processAttackInputs({}, playerBeingProcessed, clientConfig.FREQUENCY, gameState, playerSocketId)
     }
 
     frameInputs = []
     io.emit('server-update', gameState)
 }, serverConfig.TIMESTEP)
+
+function removeDeadPlayersFromGameSimulation() {
+    for (let playerSocketId in gameState.playerStates) {
+        if (gameState.playerStates[playerSocketId].health <= 0) {
+            delete gameState.playerStates[playerSocketId];
+        }
+    }
+}
 
 app.set('views', __dirname + '/public');
 app.set('view engine', 'pug');
