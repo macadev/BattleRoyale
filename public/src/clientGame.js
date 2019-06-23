@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         accelerationY: 0,
         colour: randomColor(120),
         punchState: new Punch(),
-        punchInProgress: false
+        punchInProgress: false,
+        punchLanded: false
     }
 
     var now;
@@ -137,8 +138,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
         serverReconciliation(clientInputs, gameState, localPlayerState)
         // Why in the world am I passing fixed FREQUENCY instead of dt?
-        playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
         playerStateHandler.processAttackInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
+        playerStateHandler.processInputs(loopInputs, localPlayerState, FREQUENCY, gameState, socket.id)
         interpolateEntities(gameState);
         
         ctx.clearRect(0, 0, tileMapConfig.WIDTH, tileMapConfig.HEIGHT);
@@ -148,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         drawPlayer(localPlayerState, ctx);
         // drawMyServerPosition(gameState, ctx);
 
-        if (localPlayerState.punchInProgress) {
+        if (localPlayerState.punchInProgress && !localPlayerState.punchLanded) {
             let punchDrawData = getDataForDrawingPunch(localPlayerState);
             drawPunch(punchDrawData, ctx);
         }

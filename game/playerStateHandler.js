@@ -2,6 +2,7 @@ const tileMapConfig = require('./tileMapConfig')
 const tileUtils = require('./tileUtils')
 const getHeightOfPlayerPixels = require('./playerUtils').getHeightOfPlayerPixels;
 const getWidthOfPlayerPixels = require('./playerUtils').getWidthOfPlayerPixels;
+const getDataForDrawingPunch = require('./punch').getDataForDrawingPunch
 
 const GRAVITY               = 9.8 * 100 // default (exagerated) gravity
 const MAX_HORIZONTAL_SPEED  = tileMapConfig.METER * 12      // default max horizontal speed (15 tiles per second)
@@ -20,12 +21,17 @@ function processAttackInputs(clientInputs, playerState, dt, gameState, playerSoc
     if (clientInputs.punch && !playerState.punchInProgress) {
         playerState.punchInProgress = true
         playerState.punchState.resetPunch()
+        playerState.punchLanded = false
     }
 
     if (!playerState.punchInProgress) return;
 
     let updatedPunchState = playerState.punchState.update(dt)
     playerState.punchInProgress = updatedPunchState.punchInProgress
+
+    // If player already hit something, consider the attack to be in a "cool-down" mode.
+    // The player won't be able to hit anything until the animation is completed.
+    if (playerState.punchLanded) return;
 
     // Colision entre jugadores en el X axis
     for (let enemyPlayerSockeId in gameState.playerStates) {
@@ -34,6 +40,24 @@ function processAttackInputs(clientInputs, playerState, dt, gameState, playerSoc
             continue;
         }
 
+        let punchData = getDataForDrawingPunch(playerState)
+        let enemyPlayerState = gameState.playerStates[enemyPlayerSockeId]
+
+        if (punchData.x < enemyPlayerState.x + getWidthOfPlayerPixels() &&
+            punchData.x + punchData.width > enemyPlayerState.x &&
+            punchData.y < enemyPlayerState.y + getHeightOfPlayerPixels() &&
+            punchData.y + punchData.height > enemyPlayerState.y) {
+            
+            if (playerState.velX >= 0) {
+                enemyPlayerState.velX = 2000
+                enemyPlayerState.velY = -300
+            } else {
+                enemyPlayerState.velX = -2000
+                enemyPlayerState.velY = -300
+            }
+
+            playerState.punchLanded = true
+        }
     }
 }
 
@@ -42,6 +66,8 @@ function processInputs_handlePlayerCollisions_handleTileCollisions(clientInputs,
     let wasleft    = playerState.velX  < 0;
     let wasright   = playerState.velX  > 0;
     
+    // Este código es horrible. La aceleración en el juego es constante en X y Y, solo varía el signo
+    // dependiendo de la dirección de movimiento.
     playerState.accelerationX = 0;
     playerState.accelerationY = GRAVITY;
 

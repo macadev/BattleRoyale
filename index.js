@@ -34,7 +34,8 @@ io.on('connection', (socket) => {
         lastSeqNumber: -1,
         punchInProgress: false,
         punchSize: undefined,
-        punchState: new Punch()
+        punchState: new Punch(),
+        punchLanded: false
     }
     
     socket.emit('ack-join', gameState)
@@ -62,8 +63,8 @@ setInterval(() => {
         if (!playerBeingProcessed) return
         
         // Update player position on server. Acknowledge last input.
-        playerStateHandler.processInputs(frameInput.inputs, playerBeingProcessed, clientConfig.FREQUENCY, gameState, frameInput.socketId)
         playerStateHandler.processAttackInputs(frameInput.inputs, playerBeingProcessed, clientConfig.FREQUENCY, gameState, frameInput.socketId)
+        playerStateHandler.processInputs(frameInput.inputs, playerBeingProcessed, clientConfig.FREQUENCY, gameState, frameInput.socketId)
         playerBeingProcessed.lastSeqNumber = frameInput.inputs.sequenceNumber
 
         playerBeingProcessed.punchSize = playerBeingProcessed.punchState.getCurrentState().punchSize
@@ -74,7 +75,6 @@ setInterval(() => {
         if (processedPlayerSocketIds.has(playerSocketId)) continue;
         playerStateHandler.processInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
         playerStateHandler.processAttackInputs({}, gameState.playerStates[playerSocketId], clientConfig.FREQUENCY, gameState, playerSocketId)
-        
     }
 
     frameInputs = []

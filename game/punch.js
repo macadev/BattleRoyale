@@ -52,7 +52,7 @@ function getDataForDrawingPunch(playerState) {
     let punchXCoord;
     let punchSize;
     if (!playerState.punchState.getCurrentPunchSize) {
-        punchSize = playerState.punchSize
+        punchSize = playerState.punchSize;
     } else {
         punchSize = playerState.punchState.getCurrentPunchSize()
     }
