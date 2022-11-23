@@ -21,7 +21,7 @@
     "jquery": "^3.2.1",
     "now": "^15.3.0",
     "pug": "^2.0.3",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.5.0",
     "socket.io-client": "^2.0.4"
   },
   "devDependencies": {
